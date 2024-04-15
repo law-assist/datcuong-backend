@@ -1,24 +1,15 @@
 {
-  "compilerOptions": {
-    "module": "ESNext",
-    "esModuleInterop": true,
-    "target": "ESNext",
-    "moduleResolution": "Node",
-    "outDir": "dist",
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "isolatedModules": false,
-    "strict": true,
-    "noImplicitAny": true,
-    "useUnknownInCatchVariables": false,
-    "inlineSourceMap": true
-  },
-  "exclude": [
-    "node_modules",
-  ],
-  "ts-node": {
-      "esm": true,
-      "experimentalSpecifierResolution": "node"
-  },
-  "lib": ["esnext"]
+    "compilerOptions": {
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "baseUrl": "src",
+        "outDir": "dist",
+        "sourceMap": true,
+        "noImplicitAny": true,
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true
+    },
+    "include": ["src/**/*.ts"],
 }
