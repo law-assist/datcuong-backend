@@ -57,10 +57,6 @@ export const crawler = async (url: string) => {
             mainContext: [],
             footer: [],
         };
-        // const header = [];
-        // const description = [];
-        // const mainContext = [];
-        // const footer = [];
 
         let chapter = 0;
         let conText: content = {
@@ -155,6 +151,8 @@ export const crawler = async (url: string) => {
                 return;
             } else if (mucRegex.test(line)) {
                 matches = line.match(mucRegex) || [];
+                console.log("matches: ", matches);
+
                 num = matches[1];
 
                 // parent = current;
@@ -191,12 +189,16 @@ export const crawler = async (url: string) => {
                 conText.name = "muc" + num;
                 conText.title = line;
                 conText.tag = "chuong" + chapter;
-                conText.content.push(line.slice(line.indexOf(".") + 2));
+                conText.content.push(line.substring(matches[0].length).trim());
+
+                // conText.content.push(line.slice(line.indexOf(".") + 2));
                 return;
             } else if (dieuRegex.test(line)) {
                 checkPoint = 2;
 
                 matches = line.match(dieuRegex) || [];
+                console.log("matches: ", matches[0]);
+
                 num = matches[1];
 
                 // parent = current;
@@ -232,12 +234,16 @@ export const crawler = async (url: string) => {
 
                 conText.name = "dieu" + num;
                 conText.title = line;
-                conText.content.push(line.slice(line.indexOf(".") + 2));
+                // conText.content.push(line.slice(line.indexOf(".") + 2));
+                conText.content.push(line.substring(matches[0].length).trim());
+
                 return;
             } else if (diemRegex1.test(line) || diemRegex2.test(line)) {
                 matches =
                     line.match(diemRegex1) || line.match(diemRegex2) || [];
                 num = matches[1];
+                console.log("matches: ", matches);
+
                 // parent = current;
                 current = 5;
 
@@ -263,6 +269,7 @@ export const crawler = async (url: string) => {
                 return;
             } else if (khoanRegex.test(line)) {
                 matches = line.match(khoanRegex) || [];
+                console.log("matches: ", matches);
                 num = matches[1];
 
                 // parent = current;
@@ -289,7 +296,9 @@ export const crawler = async (url: string) => {
 
                 khoan.name = "khoan" + num;
                 khoan.title = line;
-                khoan.content.push(line.slice(line.indexOf(".") + 2));
+                // khoan.content.push(line.slice(line.indexOf(".") + 2));
+                khoan.content.push(line.substring(matches[0].length).trim());
+
                 return;
             } else {
                 if (checkPoint === 0) {

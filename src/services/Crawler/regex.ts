@@ -2,7 +2,7 @@
 // const chuongRegex = /^Chương (I{1,3}|IV|V|VI{0,3}|IX|X)\b/;
 const chuongRegex = /^Chương (?:[1-9]\d*|X{0,3}(IX|IV|V?I{0,3}))\b/;
 
-const mucRegex = /^Mục (\d+)\./;
+const mucRegex = /^Mục (\d+)(\.|:)/;
 const dieuRegex = /^Điều (\d+)\./;
 // const khoanRegex = /^(\d+)\./;
 
