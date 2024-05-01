@@ -88,9 +88,7 @@ export const crawler = async (url: string) => {
             var num;
             var matches;
             if (isOpen.test(line)) {
-                console.log("line: ", line);
                 openQuote = true;
-                console.log("openQuote: ", openQuote);
             }
             if (openQuote) {
                 if (current === 1) {
@@ -151,7 +149,6 @@ export const crawler = async (url: string) => {
                 return;
             } else if (mucRegex.test(line)) {
                 matches = line.match(mucRegex) || [];
-                console.log("matches: ", matches);
 
                 num = matches[1];
 
@@ -197,7 +194,6 @@ export const crawler = async (url: string) => {
                 checkPoint = 2;
 
                 matches = line.match(dieuRegex) || [];
-                console.log("matches: ", matches[0]);
 
                 num = matches[1];
 
@@ -242,7 +238,6 @@ export const crawler = async (url: string) => {
                 matches =
                     line.match(diemRegex1) || line.match(diemRegex2) || [];
                 num = matches[1];
-                console.log("matches: ", matches);
 
                 // parent = current;
                 current = 5;
@@ -269,7 +264,6 @@ export const crawler = async (url: string) => {
                 return;
             } else if (khoanRegex.test(line)) {
                 matches = line.match(khoanRegex) || [];
-                console.log("matches: ", matches);
                 num = matches[1];
 
                 // parent = current;
