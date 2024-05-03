@@ -8,10 +8,11 @@ export interface content{
 }
 
 export interface noiDungVanBan{
-    header: any[]
+    header: any
     description: any[]
     mainContext: content[]
-    footer: any[]
+    footer: any
+    extend: any
 }
 
 export interface LawModel{
@@ -20,6 +21,7 @@ export interface LawModel{
     sohieu: any
     loaiVanBan: any
     coQuanBanHanh: any
+    topic: any
     ngayBanHanh: any
     noiDungVanBan: any
     ngayThem: any, // Thêm ngày tạo vào dữ liệu thu thập
