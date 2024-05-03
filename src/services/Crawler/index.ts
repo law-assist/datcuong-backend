@@ -1,6 +1,7 @@
 import cheerio from "cheerio";
+import puppeteer from "puppeteer";
 import axios from "axios";
-import { ObjectId } from "mongodb";
+// import { ObjectId } from "mongodb";
 import moment from "moment-timezone";
 import { content, noiDungVanBan, LawModel } from "../../app/models/CrawlModel";
 
@@ -25,10 +26,18 @@ export const crawler = async (url: string) => {
                 message: "Link đã tồn tại",
             };
         }
+        const browser = await puppeteer.launch({});
+        const page = await browser.newPage();
+        await page.goto(url);
 
-        const response = await axios.get(url);
-        const $ = cheerio.load(response.data);
+        await page.waitForSelector("#aLuocDo");
+        await page.click("#aLuocDo");
 
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        const $ = cheerio.load(await page.content());
+
+        // const response = await axios.get(url);
         const soHieu = $("td:contains('Số hiệu:')").next().text().trim();
         const loaiVanBan = $("td:contains('Loại văn bản:')")
             .next()
@@ -38,7 +47,15 @@ export const crawler = async (url: string) => {
             .next()
             .text()
             .trim();
+
         const ngayBanHanh = $("td:contains('Ngày ban hành:')")
+            .next()
+            .text()
+            .trim();
+
+        const topic = $(
+            "#tab4 #viewingDocument .hd.fl:contains('Lĩnh vực, ngành:')"
+        )
             .next()
             .text()
             .trim();
@@ -56,6 +73,7 @@ export const crawler = async (url: string) => {
             description: [],
             mainContext: [],
             footer: [],
+            extend: [],
         };
 
         let chapter = 0;
@@ -80,9 +98,7 @@ export const crawler = async (url: string) => {
 
         let checkPoint = 0;
         let current = 0;
-        // let parent = 0;
         let openQuote = false;
-        // let closeQuote = false;
 
         const readingCurrentLine = (line: string) => {
             var num;
@@ -317,15 +333,30 @@ export const crawler = async (url: string) => {
             }
         };
 
-        $("#tab1 p").each((index, element) => {
-            let paragraph = $(element).text();
-            paragraph = paragraph.replace(/\n/g, " ");
-            paragraph = paragraph.trim();
+        $("#tab1 .content1 div div")
+            .children()
+            .each((index, element) => {
+                if (
+                    element.name == "table" &&
+                    (checkPoint == 0 || checkPoint == 3)
+                ) {
+                    if (checkPoint === 0) {
+                        contents.header.push($(element).html());
+                    } else if (checkPoint == 3) {
+                        contents.footer.push($(element).html());
+                    }
+                } else if (checkPoint < 3) {
+                    let paragraph = $(element).text();
+                    paragraph = paragraph.replace(/\n/g, " ");
+                    paragraph = paragraph.trim();
 
-            if (paragraph !== "Video Pháp Luật") {
-                readingCurrentLine(paragraph);
-            }
-        });
+                    if (paragraph !== "Video Pháp Luật") {
+                        readingCurrentLine(paragraph);
+                    }
+                } else {
+                    contents.extend.push($(element).html());
+                }
+            });
 
         const crawlData: LawModel = {
             link: url,
@@ -333,15 +364,19 @@ export const crawler = async (url: string) => {
             sohieu: soHieu,
             loaiVanBan: loaiVanBan,
             coQuanBanHanh: coQuanBanHanh,
+            topic: topic,
             ngayBanHanh: ngayBanHanh,
             noiDungVanBan: contents,
             ngayThem: now,
         };
 
+        await browser.close();
+
         await saveData(crawlData);
         return {
             status: "200",
             message: "Crawl thành công",
+            data: crawlData,
         };
     } catch (error) {
         console.log(error);
@@ -376,7 +411,11 @@ export const search = async (id: number) => {
     //     console.log(error);
     // }
     try {
-        const res = await client.db("law_dev").collection("lawData").find({}).toArray();
+        const res = await client
+            .db("law_dev")
+            .collection("lawData")
+            .find({})
+            .toArray();
         return {
             status: "200",
             message: "Found",
@@ -390,3 +429,13 @@ export const search = async (id: number) => {
         };
     }
 };
+
+// $("#tab1 p").each((index, element) => {
+//     let paragraph = $(element).text();
+//     paragraph = paragraph.replace(/\n/g, " ");
+//     paragraph = paragraph.trim();
+
+//     if (paragraph !== "Video Pháp Luật") {
+//         readingCurrentLine(paragraph);
+//     }
+// });
