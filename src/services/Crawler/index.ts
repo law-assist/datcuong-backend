@@ -3,7 +3,7 @@ import puppeteer from "puppeteer";
 import axios from "axios";
 // import { ObjectId } from "mongodb";
 import moment from "moment-timezone";
-import { content, noiDungVanBan, LawModel } from "../../app/models/CrawlModel";
+import { context, noiDungVanBan, LawModel } from "../../app/models/CrawlModel";
 
 import { saveData, checkLink, client } from "../database.service";
 import {
@@ -19,16 +19,38 @@ import {
 
 export const crawler = async (url: string) => {
     try {
-        const checking = await checkLink(url);
-        if (checking) {
-            return {
-                status: "200",
-                message: "Link đã tồn tại",
-            };
-        }
-        const browser = await puppeteer.launch({});
+        // const checking = await checkLink(url);
+        // if (checking) {
+        //     return {
+        //         status: "200",
+        //         message: "Link đã tồn tại",
+        //         data: checking,
+        //     };
+        // }
+        const browser = await puppeteer.launch({
+            headless: false,
+            slowMo: 50,
+        });
         const page = await browser.newPage();
         await page.goto(url);
+
+        //login
+        // await page.waitForSelector("#usernameTextBox");
+        // await page.type("#usernameTextBox", "khtc_vietrade");
+        // console.log("username");
+        // await page.waitForSelector("#passwordTextBox");
+        // await page.type("#passwordTextBox", "xttm2022");
+        // console.log("password");
+        // await page.waitForSelector("#loginButton");
+        // await page.click("#loginButton");
+        // console.log("login");
+        // await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // confirm login
+        // const findConfirmBtns =  await page.waitForSelector(".ui-button-text");
+
+        // console.log("confirm");
+        // await new Promise((resolve) => setTimeout(resolve, 1000));
 
         await page.waitForSelector("#aLuocDo");
         await page.click("#aLuocDo");
@@ -77,23 +99,23 @@ export const crawler = async (url: string) => {
         };
 
         let chapter = 0;
-        let conText: content = {
+        let conText: context = {
             name: "",
             title: "",
             content: [],
-            tag: null, // Or any other default value for tag, as it's of type `any`
+            tag: "", // Or any other default value for tag, as it's of type `any`
         };
-        let khoan: content = {
+        let khoan: context = {
             name: "",
             title: "",
             content: [],
-            tag: null, // Or any other default value for tag, as it's of type `any`
+            tag: "", // Or any other default value for tag, as it's of type `any`
         };
-        let diem: content = {
+        let diem: context = {
             name: "",
             title: "",
             content: [],
-            tag: null, // Or any other default value for tag, as it's of type `any`
+            tag: "", 
         };
 
         let checkPoint = 0;
@@ -138,7 +160,7 @@ export const crawler = async (url: string) => {
                         name: "",
                         title: "",
                         content: [],
-                        tag: null, // Or any other default value for tag, as it's of type `any`
+                        tag: "", 
                     };
                 }
                 if (khoan.name !== "") {
@@ -147,7 +169,7 @@ export const crawler = async (url: string) => {
                         name: "",
                         title: "",
                         content: [],
-                        tag: null, // Or any other default value for tag, as it's of type `any`
+                        tag: "", 
                     };
                 }
                 if (conText.name !== "") {
@@ -156,7 +178,7 @@ export const crawler = async (url: string) => {
                         name: "",
                         title: "",
                         content: [],
-                        tag: null, // Or any other default value for tag, as it's of type `any`
+                        tag: "", 
                     };
                 }
 
@@ -177,7 +199,7 @@ export const crawler = async (url: string) => {
                         name: "",
                         title: "",
                         content: [],
-                        tag: null, // Or any other default value for tag, as it's of type `any`
+                        tag: "", // Or any other default value for tag, as it's of type `any`
                     };
                 }
                 if (khoan.name !== "") {
@@ -186,7 +208,7 @@ export const crawler = async (url: string) => {
                         name: "",
                         title: "",
                         content: [],
-                        tag: null, // Or any other default value for tag, as it's of type `any`
+                        tag: "", // Or any other default value for tag, as it's of type `any`
                     };
                 }
                 if (conText.name !== "") {
@@ -195,7 +217,7 @@ export const crawler = async (url: string) => {
                         name: "",
                         title: "",
                         content: [],
-                        tag: null, // Or any other default value for tag, as it's of type `any`
+                        tag: "", // Or any other default value for tag, as it's of type `any`
                     };
                 }
 
@@ -222,7 +244,7 @@ export const crawler = async (url: string) => {
                         name: "",
                         title: "",
                         content: [],
-                        tag: null, // Or any other default value for tag, as it's of type `any`
+                        tag: "", // Or any other default value for tag, as it's of type `any`
                     };
                 }
                 if (khoan.name !== "") {
@@ -231,7 +253,7 @@ export const crawler = async (url: string) => {
                         name: "",
                         title: "",
                         content: [],
-                        tag: null, // Or any other default value for tag, as it's of type `any`
+                        tag: "", // Or any other default value for tag, as it's of type `any`
                     };
                 }
                 if (conText.name !== "") {
@@ -240,7 +262,7 @@ export const crawler = async (url: string) => {
                         name: "",
                         title: "",
                         content: [],
-                        tag: null, // Or any other default value for tag, as it's of type `any`
+                        tag: "", // Or any other default value for tag, as it's of type `any`
                     };
                 }
 
@@ -264,7 +286,7 @@ export const crawler = async (url: string) => {
                         name: "",
                         title: "",
                         content: [],
-                        tag: null, // Or any other default value for tag, as it's of type `any`
+                        tag: "", // Or any other default value for tag, as it's of type `any`
                     };
                 }
 
@@ -291,7 +313,7 @@ export const crawler = async (url: string) => {
                         name: "",
                         title: "",
                         content: [],
-                        tag: null, // Or any other default value for tag, as it's of type `any`
+                        tag: "", // Or any other default value for tag, as it's of type `any`
                     };
                 }
                 if (khoan.name !== "") {
@@ -300,7 +322,7 @@ export const crawler = async (url: string) => {
                         name: "",
                         title: "",
                         content: [],
-                        tag: null, // Or any other default value for tag, as it's of type `any`
+                        tag: "", // Or any other default value for tag, as it's of type `any`
                     };
                 }
 
@@ -372,6 +394,15 @@ export const crawler = async (url: string) => {
 
         await browser.close();
 
+        const checking = await checkLink(url);
+        if (checking) {
+            return {
+                status: "200",
+                message: "Link đã tồn tại",
+                data: checking,
+            };
+        }
+
         await saveData(crawlData);
         return {
             status: "200",
@@ -429,13 +460,3 @@ export const search = async (id: number) => {
         };
     }
 };
-
-// $("#tab1 p").each((index, element) => {
-//     let paragraph = $(element).text();
-//     paragraph = paragraph.replace(/\n/g, " ");
-//     paragraph = paragraph.trim();
-
-//     if (paragraph !== "Video Pháp Luật") {
-//         readingCurrentLine(paragraph);
-//     }
-// });
