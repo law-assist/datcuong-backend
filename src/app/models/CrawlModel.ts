@@ -1,16 +1,16 @@
-import { ObjectId } from "mongodb";
+// import { ObjectId } from "mongodb";
 
-export interface content{
+export interface context{
     name: string;
     title: string;
-    content: any[];
-    tag: any;
+    content: (string | context)[]; //lv 2 (Khoan) or lv 3 (Diem)
+    tag: string | "";
 }
 
 export interface noiDungVanBan{
     header: any
     description: any[]
-    mainContext: content[]
+    mainContext: context[]
     footer: any
     extend: any
 }
@@ -25,4 +25,39 @@ export interface LawModel{
     ngayBanHanh: any
     noiDungVanBan: any
     ngayThem: any, // Thêm ngày tạo vào dữ liệu thu thập
+}
+
+interface Law {
+    // _id: ObjectId;
+    category: string; // loại văn bản
+    department: string; // cơ quan ban hành
+    name: string; // tên văn bản
+    pdf_link: string; // đường dẫn tệp pdf
+    created_at: Date; // ngày tạo
+    updated_at: Date; // ngày cập nhật/chỉnh sửa văn bản
+    number_doc: string; // số hiệu văn bản
+    date_approved: string; // ngày ban hành
+    field: string; // lĩnh vực, ngành
+    content: {
+      // nội dung văn bản
+      header: string[]; // từ đầu đến ngày tháng năm
+      description: string[]; // từ tên đến phần căn cứ
+      mainContext: context[]; // lv1: Chuong, muc, dieu
+      footer: string[]; // từ phần chữ ký
+      extend: string[]; // hết
+    };
+    relatedLaws?: LawRelation[];
+  }
+
+// interface LawRelation{
+
+// }
+
+interface LawRelation {
+    srcDir: string[]; //['dieu2', 'khoan1', 'index'] search context.name la dieu2 sau do contex.content.name la khoan 1
+    desDir: string[]; //['LawID','dieu2', 'khoan2', 'index']
+    typeRelation: any; //enum type
+    note: string | "";
+    created_at: Date;
+    updated_at: Date;
 }
