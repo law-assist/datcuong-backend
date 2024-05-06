@@ -16,6 +16,10 @@ const data = [
         id: 4,
         url: "https://thuvienphapluat.vn/van-ban/Giao-thong-Van-tai/Nghi-dinh-19-2024-ND-CP-sua-doi-Nghi-dinh-48-2019-ND-CP-quan-ly-phuong-tien-vui-choi-duoi-nuoc-599548.aspx",
     },
+    {
+        id: 5,
+        url: "https://thuvienphapluat.vn/van-ban/Cong-nghe-thong-tin/Nghi-quyet-127-NQ-CP-2023-ap-dung-cap-thi-thuc-dien-tu-cho-cong-dan-cac-nuoc-vung-lanh-tho-575687.aspx",
+    }
 ];
 
 import { crawler, search } from "../../services/Crawler";

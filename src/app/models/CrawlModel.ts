@@ -3,16 +3,16 @@
 export interface context{
     name: string;
     title: string;
-    content: (string | context)[]; //lv 2 (Khoan) or lv 3 (Diem)
-    tag: string | "";
+    content: (string | context)[]; //lv 2 (Khoản) or lv 3 (Điểm)
+    tag?: string | "";
 }
 
 export interface noiDungVanBan{
-    header: any
-    description: any[]
+    header: any[]
+    description: string[]
     mainContext: context[]
-    footer: any
-    extend: any
+    footer: any[]
+    extend: any[]
 }
 
 export interface LawModel{
@@ -27,7 +27,7 @@ export interface LawModel{
     ngayThem: any, // Thêm ngày tạo vào dữ liệu thu thập
 }
 
-interface Law {
+export interface Law {
     // _id: ObjectId;
     category: string; // loại văn bản
     department: string; // cơ quan ban hành
@@ -38,13 +38,12 @@ interface Law {
     number_doc: string; // số hiệu văn bản
     date_approved: string; // ngày ban hành
     field: string; // lĩnh vực, ngành
-    content: {
-      // nội dung văn bản
-      header: string[]; // từ đầu đến ngày tháng năm
+    content: { // nội dung văn bản
+      header: string[]; // từ đầu đến ngày tháng năm //tbody
       description: string[]; // từ tên đến phần căn cứ
       mainContext: context[]; // lv1: Chuong, muc, dieu
-      footer: string[]; // từ phần chữ ký
-      extend: string[]; // hết
+      footer: string[]; // từ phần chữ ký //tbody
+      extend: string[]; // Phụ lục nếu có đến hết
     };
     relatedLaws?: LawRelation[];
   }
