@@ -3,7 +3,7 @@ import puppeteer from "puppeteer";
 import axios from "axios";
 // import { ObjectId } from "mongodb";
 import moment from "moment-timezone";
-import { context, noiDungVanBan, LawModel } from "../../app/models/CrawlModel";
+import { context, noiDungVanBan, LawModel,Law } from "../../app/models/CrawlModel";
 
 import { saveData, checkLink, client } from "../database.service";
 import {
@@ -28,8 +28,8 @@ export const crawler = async (url: string) => {
         //     };
         // }
         const browser = await puppeteer.launch({
-            headless: false,
-            slowMo: 50,
+            // headless: false,
+            // slowMo: 50,
         });
         const page = await browser.newPage();
         await page.goto(url);
@@ -103,13 +103,13 @@ export const crawler = async (url: string) => {
             name: "",
             title: "",
             content: [],
-            tag: "", // Or any other default value for tag, as it's of type `any`
+            tag: "", // 
         };
         let khoan: context = {
             name: "",
             title: "",
             content: [],
-            tag: "", // Or any other default value for tag, as it's of type `any`
+            tag: "", // 
         };
         let diem: context = {
             name: "",
@@ -199,7 +199,7 @@ export const crawler = async (url: string) => {
                         name: "",
                         title: "",
                         content: [],
-                        tag: "", // Or any other default value for tag, as it's of type `any`
+                        tag: "", // 
                     };
                 }
                 if (khoan.name !== "") {
@@ -208,7 +208,7 @@ export const crawler = async (url: string) => {
                         name: "",
                         title: "",
                         content: [],
-                        tag: "", // Or any other default value for tag, as it's of type `any`
+                        tag: "", // 
                     };
                 }
                 if (conText.name !== "") {
@@ -217,7 +217,7 @@ export const crawler = async (url: string) => {
                         name: "",
                         title: "",
                         content: [],
-                        tag: "", // Or any other default value for tag, as it's of type `any`
+                        tag: "", // 
                     };
                 }
 
@@ -244,7 +244,7 @@ export const crawler = async (url: string) => {
                         name: "",
                         title: "",
                         content: [],
-                        tag: "", // Or any other default value for tag, as it's of type `any`
+                        tag: "", // 
                     };
                 }
                 if (khoan.name !== "") {
@@ -253,7 +253,7 @@ export const crawler = async (url: string) => {
                         name: "",
                         title: "",
                         content: [],
-                        tag: "", // Or any other default value for tag, as it's of type `any`
+                        tag: "", // 
                     };
                 }
                 if (conText.name !== "") {
@@ -262,7 +262,7 @@ export const crawler = async (url: string) => {
                         name: "",
                         title: "",
                         content: [],
-                        tag: "", // Or any other default value for tag, as it's of type `any`
+                        tag: "", // 
                     };
                 }
 
@@ -286,7 +286,7 @@ export const crawler = async (url: string) => {
                         name: "",
                         title: "",
                         content: [],
-                        tag: "", // Or any other default value for tag, as it's of type `any`
+                        tag: "", // 
                     };
                 }
 
@@ -313,7 +313,7 @@ export const crawler = async (url: string) => {
                         name: "",
                         title: "",
                         content: [],
-                        tag: "", // Or any other default value for tag, as it's of type `any`
+                        tag: "", // 
                     };
                 }
                 if (khoan.name !== "") {
@@ -322,7 +322,7 @@ export const crawler = async (url: string) => {
                         name: "",
                         title: "",
                         content: [],
-                        tag: "", // Or any other default value for tag, as it's of type `any`
+                        tag: "", // 
                     };
                 }
 
@@ -380,34 +380,48 @@ export const crawler = async (url: string) => {
                 }
             });
 
-        const crawlData: LawModel = {
-            link: url,
-            tenVanBan: tenVanBan,
-            sohieu: soHieu,
-            loaiVanBan: loaiVanBan,
-            coQuanBanHanh: coQuanBanHanh,
-            topic: topic,
-            ngayBanHanh: ngayBanHanh,
-            noiDungVanBan: contents,
-            ngayThem: now,
+        // const crawlData: LawModel = {
+        //     link: url,
+        //     tenVanBan: tenVanBan,
+        //     sohieu: soHieu,
+        //     loaiVanBan: loaiVanBan,
+        //     coQuanBanHanh: coQuanBanHanh,
+        //     topic: topic,
+        //     ngayBanHanh: ngayBanHanh,
+        //     noiDungVanBan: contents,
+        //     ngayThem: now,
+        // };
+
+        const law: Law = {
+            category: loaiVanBan,
+            department: coQuanBanHanh,
+            name: tenVanBan,
+            pdf_link: url,
+            created_at: new Date(Date.now() + 7 * 60 * 60 * 1000), // to UTC +7
+            updated_at: new Date(Date.now() + 7 * 60 * 60 * 1000), // to UTC +7
+            number_doc: soHieu,
+            date_approved: "",
+            field: topic,
+            content: contents,
+            relatedLaws: []
         };
 
         await browser.close();
 
-        const checking = await checkLink(url);
-        if (checking) {
-            return {
-                status: "200",
-                message: "Link đã tồn tại",
-                data: checking,
-            };
-        }
+        // const checking = await checkLink(url);
+        // if (checking) {
+        //     return {
+        //         status: "200",
+        //         message: "Link đã tồn tại",
+        //         data: checking,
+        //     };
+        // }
 
-        await saveData(crawlData);
+        // await saveData(crawlData);
         return {
             status: "200",
             message: "Crawl thành công",
-            data: crawlData,
+            data: law,
         };
     } catch (error) {
         console.log(error);
