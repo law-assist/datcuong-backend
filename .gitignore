@@ -17,6 +17,7 @@
 # Dependency directories (remove the comment below to include it)
 node_modules
 dist
+test.html
 # vendor/
 
 # Go workspace file

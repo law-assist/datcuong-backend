@@ -19,8 +19,21 @@ const data = [
     {
         id: 5,
         url: "https://thuvienphapluat.vn/van-ban/Cong-nghe-thong-tin/Nghi-quyet-127-NQ-CP-2023-ap-dung-cap-thi-thuc-dien-tu-cho-cong-dan-cac-nuoc-vung-lanh-tho-575687.aspx",
-    }
+    },
+    {
+        id: 6,
+        url: "https://thuvienphapluat.vn/van-ban/The-thao-Y-te/Nghi-dinh-96-2023-ND-CP-huong-dan-Luat-Kham-benh-chua-benh-583328.aspx",
+    },
+    {
+        id: 7,
+        url: "https://thuvienphapluat.vn/van-ban/Thu-tuc-To-tung/Bo-luat-to-tung-dan-su-2015-296861.aspx",
+    },{
+        id: 8,
+        url: "https://thuvienphapluat.vn/van-ban/Trach-nhiem-hinh-su/Bo-luat-to-tung-hinh-su-2015-296884.aspx",
+    },
 ];
+
+
 
 import { crawler, search } from "../../services/Crawler";
 

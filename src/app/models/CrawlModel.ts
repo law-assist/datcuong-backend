@@ -15,18 +15,6 @@ export interface noiDungVanBan{
     extend: any[]
 }
 
-export interface LawModel{
-    link: any;
-    tenVanBan: any
-    sohieu: any
-    loaiVanBan: any
-    coQuanBanHanh: any
-    topic: any
-    ngayBanHanh: any
-    noiDungVanBan: any
-    ngayThem: any, // Thêm ngày tạo vào dữ liệu thu thập
-}
-
 export interface Law {
     // _id: ObjectId;
     category: string; // loại văn bản
@@ -39,20 +27,16 @@ export interface Law {
     date_approved: string; // ngày ban hành
     field: string; // lĩnh vực, ngành
     content: { // nội dung văn bản
-      header: string[]; // từ đầu đến ngày tháng năm //tbody
+      header: string[]; // từ đầu đến ngày tháng năm
       description: string[]; // từ tên đến phần căn cứ
-      mainContext: context[]; // lv1: Chuong, muc, dieu
-      footer: string[]; // từ phần chữ ký //tbody
+      mainContext: context[]; // lv1: Phan, chuong, muc, tieu muc, dieu; lv2: khoan; lv3: diem
+      footer: string[]; // Nơi nhận, chữ kỹ
       extend: string[]; // Phụ lục nếu có đến hết
     };
     relatedLaws?: LawRelation[];
   }
 
-// interface LawRelation{
-
-// }
-
-interface LawRelation {
+export interface LawRelation {
     srcDir: string[]; //['dieu2', 'khoan1', 'index'] search context.name la dieu2 sau do contex.content.name la khoan 1
     desDir: string[]; //['LawID','dieu2', 'khoan2', 'index']
     typeRelation: any; //enum type

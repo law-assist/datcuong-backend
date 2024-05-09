@@ -44,7 +44,7 @@ const checkLink = async function (link: string) {
     const db = client.db("law_dev");
     const collection = db.collection("lawData");
     const existingLink = await collection.findOne({
-      link: link,
+      pdf_link: link,
     });
     if (existingLink) {
       return existingLink;

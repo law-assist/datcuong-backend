@@ -1,14 +1,17 @@
 import cheerio from "cheerio";
 import puppeteer from "puppeteer";
 import axios from "axios";
+
 // import { ObjectId } from "mongodb";
-import moment from "moment-timezone";
-import { context, noiDungVanBan, LawModel,Law } from "../../app/models/CrawlModel";
+// import moment from "moment-timezone";
+import { context, noiDungVanBan, Law } from "../../app/models/CrawlModel";
 
 import { saveData, checkLink, client } from "../database.service";
 import {
+    phanRegex,
     chuongRegex,
     mucRegex,
+    tieuMucRegex,
     dieuRegex,
     khoanRegex,
     diemRegex1,
@@ -19,14 +22,14 @@ import {
 
 export const crawler = async (url: string) => {
     try {
-        // const checking = await checkLink(url);
-        // if (checking) {
-        //     return {
-        //         status: "200",
-        //         message: "Link đã tồn tại",
-        //         data: checking,
-        //     };
-        // }
+        const checking = await checkLink(url);
+        if (checking) {
+            return {
+                status: "200",
+                message: "Link đã tồn tại",
+                law: checking,
+            };
+        }
         const browser = await puppeteer.launch({
             // headless: false,
             // slowMo: 50,
@@ -54,7 +57,6 @@ export const crawler = async (url: string) => {
 
         await page.waitForSelector("#aLuocDo");
         await page.click("#aLuocDo");
-
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
         const $ = cheerio.load(await page.content());
@@ -75,20 +77,12 @@ export const crawler = async (url: string) => {
             .text()
             .trim();
 
-        const topic = $(
-            "#tab4 #viewingDocument .hd.fl:contains('Lĩnh vực, ngành:')"
-        )
-            .next()
-            .text()
-            .trim();
-
-        // const noiDungVanBan = $(".content1").html();
         const title = $("title").text().trim();
         const match = title.match(/(.+)\s+mới nhất$/);
         const tenVanBan = match ? match[1] : title;
-        const now = moment()
-            .tz("Asia/Ho_Chi_Minh")
-            .format("YYYY-MM-DD HH:mm:ss");
+        // const now = moment()
+        //     .tz("Asia/Ho_Chi_Minh")
+        //     .format("YYYY-MM-DD HH:mm:ss");
 
         const contents: noiDungVanBan = {
             header: [],
@@ -98,25 +92,62 @@ export const crawler = async (url: string) => {
             extend: [],
         };
 
-        let chapter = 0;
+        let chapter = 0,
+            muc = 0,
+            part = 0; // muc: Mục, part: Phần
         let conText: context = {
             name: "",
             title: "",
             content: [],
-            tag: "", // 
+            tag: "", //
         };
         let khoan: context = {
             name: "",
             title: "",
             content: [],
-            tag: "", // 
+            tag: "", //
         };
         let diem: context = {
             name: "",
             title: "",
             content: [],
-            tag: "", 
+            tag: "",
         };
+
+        const checkContext = () => {
+            if (conText.name !== "") {
+                contents.mainContext.push(conText);
+                conText = {
+                    name: "",
+                    title: "",
+                    content: [],
+                    tag: "",
+                };
+            }
+            return
+        }
+        const checkKhoan = () => {
+            if (khoan.name !== "") {
+                conText.content.push(khoan);
+                khoan = {
+                    name: "",
+                    title: "",
+                    content: [],
+                    tag: "",
+                };
+            }
+        }
+        const checkDiem = () => {
+            if (diem.name !== "") {
+                khoan.content.push(diem);
+                diem = {
+                    name: "",
+                    title: "",
+                    content: [],
+                    tag: "",
+                };
+            }
+        }
 
         let checkPoint = 0;
         let current = 0;
@@ -132,20 +163,31 @@ export const crawler = async (url: string) => {
                 if (current === 1) {
                     conText.content.push(line);
                 } else if (current === 2) {
-                    conText.content.push(line);
-                } else if (current === 3) {
-                    conText.content.push(line);
-                } else if (current === 4) {
                     khoan.content.push(line);
-                } else if (current === 5) {
+                } else if (current === 3) {
                     diem.content.push(line);
                 }
 
                 if (isClose.test(line)) {
                     openQuote = false;
                 }
+                return;
             } else if (line === "") {
                 checkPoint++;
+                return;
+            } else if (phanRegex.test(line)) {
+                part++;
+                checkPoint = 2;
+
+                // parent = current;
+                current = 1;
+
+                checkDiem()
+                checkKhoan()
+                checkContext()
+
+                conText.name = "phan" + part;
+                conText.title = line;
                 return;
             } else if (chuongRegex.test(line)) {
                 chapter++;
@@ -154,117 +196,58 @@ export const crawler = async (url: string) => {
                 // parent = current;
                 current = 1;
 
-                if (diem.name !== "") {
-                    khoan.content.push(diem);
-                    diem = {
-                        name: "",
-                        title: "",
-                        content: [],
-                        tag: "", 
-                    };
-                }
-                if (khoan.name !== "") {
-                    conText.content.push(khoan);
-                    khoan = {
-                        name: "",
-                        title: "",
-                        content: [],
-                        tag: "", 
-                    };
-                }
-                if (conText.name !== "") {
-                    contents.mainContext.push(conText);
-                    conText = {
-                        name: "",
-                        title: "",
-                        content: [],
-                        tag: "", 
-                    };
-                }
+                checkDiem()
+                checkKhoan()
+                checkContext()
 
                 conText.name = "chuong" + chapter;
                 conText.title = line;
                 return;
             } else if (mucRegex.test(line)) {
+                muc++;
                 matches = line.match(mucRegex) || [];
-
                 num = matches[1];
-
                 // parent = current;
-                current = 2;
+                current = 1;
 
-                if (diem.name !== "") {
-                    khoan.content.push(diem);
-                    diem = {
-                        name: "",
-                        title: "",
-                        content: [],
-                        tag: "", // 
-                    };
-                }
-                if (khoan.name !== "") {
-                    conText.content.push(khoan);
-                    khoan = {
-                        name: "",
-                        title: "",
-                        content: [],
-                        tag: "", // 
-                    };
-                }
-                if (conText.name !== "") {
-                    contents.mainContext.push(conText);
-                    conText = {
-                        name: "",
-                        title: "",
-                        content: [],
-                        tag: "", // 
-                    };
-                }
+                checkDiem()
+                checkKhoan()
+                checkContext()
 
-                conText.name = "muc" + num;
+                conText.name = "muc" + muc;
                 conText.title = line;
                 conText.tag = "chuong" + chapter;
                 conText.content.push(line.substring(matches[0].length).trim());
 
                 // conText.content.push(line.slice(line.indexOf(".") + 2));
                 return;
+            } else if (tieuMucRegex.test(line)) {
+                matches = line.match(tieuMucRegex) || [];
+                num = matches[1];
+                // parent = current;
+                current = 1;
+
+                checkDiem()
+                checkKhoan()
+                checkContext()
+
+                conText.name = "tieuMuc" + num;
+                conText.title = line;
+                conText.tag = "muc" + muc;
+                conText.content.push(line.substring(matches[0].length).trim());
+                return;
             } else if (dieuRegex.test(line)) {
                 checkPoint = 2;
-
                 matches = line.match(dieuRegex) || [];
 
                 num = matches[1];
 
                 // parent = current;
-                current = 3;
+                current = 1;
 
-                if (diem.name !== "") {
-                    khoan.content.push(diem);
-                    diem = {
-                        name: "",
-                        title: "",
-                        content: [],
-                        tag: "", // 
-                    };
-                }
-                if (khoan.name !== "") {
-                    conText.content.push(khoan);
-                    khoan = {
-                        name: "",
-                        title: "",
-                        content: [],
-                        tag: "", // 
-                    };
-                }
-                if (conText.name !== "") {
-                    contents.mainContext.push(conText);
-                    conText = {
-                        name: "",
-                        title: "",
-                        content: [],
-                        tag: "", // 
-                    };
-                }
+                checkDiem()
+                checkKhoan()
+                checkContext()
 
                 conText.name = "dieu" + num;
                 conText.title = line;
@@ -278,17 +261,9 @@ export const crawler = async (url: string) => {
                 num = matches[1];
 
                 // parent = current;
-                current = 5;
+                current = 3;
 
-                if (diem.name !== "") {
-                    khoan.content.push(diem);
-                    diem = {
-                        name: "",
-                        title: "",
-                        content: [],
-                        tag: "", // 
-                    };
-                }
+                checkDiem()
 
                 diem.name = "diem" + num;
                 diem.title = line;
@@ -305,26 +280,10 @@ export const crawler = async (url: string) => {
                 num = matches[1];
 
                 // parent = current;
-                current = 4;
+                current = 2;
 
-                if (diem.name !== "") {
-                    khoan.content.push(diem);
-                    diem = {
-                        name: "",
-                        title: "",
-                        content: [],
-                        tag: "", // 
-                    };
-                }
-                if (khoan.name !== "") {
-                    conText.content.push(khoan);
-                    khoan = {
-                        name: "",
-                        title: "",
-                        content: [],
-                        tag: "", // 
-                    };
-                }
+                checkDiem()
+                checkKhoan()
 
                 khoan.name = "khoan" + num;
                 khoan.title = line;
@@ -333,24 +292,16 @@ export const crawler = async (url: string) => {
 
                 return;
             } else {
-                if (checkPoint === 0) {
-                    contents.header.push(line);
-                } else if (checkPoint === 1) {
+                if (checkPoint === 1) {
                     contents.description.push(line);
                 } else if (checkPoint === 2) {
                     if (current === 1) {
                         conText.content.push(line);
                     } else if (current === 2) {
-                        conText.content.push(line);
-                    } else if (current === 3) {
-                        conText.content.push(line);
-                    } else if (current === 4) {
                         khoan.content.push(line);
-                    } else if (current === 5) {
+                    } else if (current === 3) {
                         diem.content.push(line);
                     }
-                } else if (checkPoint > 2) {
-                    contents.footer.push(line);
                 }
             }
         };
@@ -363,15 +314,38 @@ export const crawler = async (url: string) => {
                     (checkPoint == 0 || checkPoint == 3)
                 ) {
                     if (checkPoint === 0) {
-                        contents.header.push($(element).html());
+                        $(element)
+                            .find("p")
+                            .each((i, e) => {
+                                const text = $(e)
+                                    .text()
+                                    .replace(/\n/g, " ")
+                                    .replace(/ +/g, " ")
+                                    .replace(/-+$/g, "")
+                                    .trim();
+                                if (text !== "") contents.header.push(text);
+                            });
+                        // contents.header.push($(element).html());
                     } else if (checkPoint == 3) {
-                        contents.footer.push($(element).html());
+                        checkDiem()
+                        checkKhoan()
+                        checkContext()
+                        $(element)
+                            .find("p")
+                            .each((i, e) => {
+                                $(e).children().each((i,e) => {
+                                    const text = $(e)
+                                        .text()
+                                        .replace(/\n/g, "")
+                                        .replace(/ +/g, " ")
+                                        .trim();
+                                    if (text !== "") contents.footer.push(text);
+                                })
+                            });
+                        checkPoint++;
                     }
                 } else if (checkPoint < 3) {
-                    let paragraph = $(element).text();
-                    paragraph = paragraph.replace(/\n/g, " ");
-                    paragraph = paragraph.trim();
-
+                    let paragraph = $(element).text().replace(/\n/g, " ").trim();
                     if (paragraph !== "Video Pháp Luật") {
                         readingCurrentLine(paragraph);
                     }
@@ -380,17 +354,12 @@ export const crawler = async (url: string) => {
                 }
             });
 
-        // const crawlData: LawModel = {
-        //     link: url,
-        //     tenVanBan: tenVanBan,
-        //     sohieu: soHieu,
-        //     loaiVanBan: loaiVanBan,
-        //     coQuanBanHanh: coQuanBanHanh,
-        //     topic: topic,
-        //     ngayBanHanh: ngayBanHanh,
-        //     noiDungVanBan: contents,
-        //     ngayThem: now,
-        // };
+        const topic = $(
+            "#tab4 #viewingDocument .hd.fl:contains('Lĩnh vực, ngành:')"
+        )
+            .next()
+            .text()
+            .trim();
 
         const law: Law = {
             category: loaiVanBan,
@@ -400,28 +369,19 @@ export const crawler = async (url: string) => {
             created_at: new Date(Date.now() + 7 * 60 * 60 * 1000), // to UTC +7
             updated_at: new Date(Date.now() + 7 * 60 * 60 * 1000), // to UTC +7
             number_doc: soHieu,
-            date_approved: "",
+            date_approved: ngayBanHanh,
             field: topic,
             content: contents,
-            relatedLaws: []
+            relatedLaws: [],
         };
 
         await browser.close();
 
-        // const checking = await checkLink(url);
-        // if (checking) {
-        //     return {
-        //         status: "200",
-        //         message: "Link đã tồn tại",
-        //         data: checking,
-        //     };
-        // }
-
-        // await saveData(crawlData);
+        // await saveData(law);
         return {
             status: "200",
             message: "Crawl thành công",
-            data: law,
+            law: law,
         };
     } catch (error) {
         console.log(error);
