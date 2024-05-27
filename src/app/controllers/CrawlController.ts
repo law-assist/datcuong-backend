@@ -30,12 +30,15 @@ const data = [
     },{
         id: 8,
         url: "https://thuvienphapluat.vn/van-ban/Trach-nhiem-hinh-su/Bo-luat-to-tung-hinh-su-2015-296884.aspx",
+    },{
+        id: 9,
+        url: "https://thuvienphapluat.vn/van-ban/Giao-thong-Van-tai/Nghi-dinh-44-2024-ND-CP-quan-ly-su-dung-tai-san-ket-cau-ha-tang-giao-thong-duong-bo-608235.aspx",
     },
 ];
 
 
 
-import { crawler, search } from "../../services/Crawler";
+import { crawler, search, getAllUrl } from "../../services/Crawler";
 
 class CrawlController {
     // [GET] /crawl /start?url=http://www.example.com&depth=2
@@ -81,6 +84,26 @@ class CrawlController {
             }
         } else {
             res.status(404).send("URL not found for the given slug.");
+        }
+    }
+
+    // [GET] auto
+    async autoCrawl(req: any, res: any){
+        try {
+            let urls = await getAllUrl();
+            console.log("urls: ", urls);
+            for (let url of urls) {
+                let re = await crawler(url);
+                console.log("Crawled: ", url);
+            }
+            res.json({ message: "Crawling completed",
+                data: urls
+             });
+        } catch (error) {
+            console.error("Error occurred while crawling:", error);
+            res.status(500).send(
+                "An error occurred while crawling the URL."
+            );
         }
     }
 }
