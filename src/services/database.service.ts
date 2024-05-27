@@ -24,10 +24,10 @@ const saveData = async function (data: any) {
     const db = client.db("law_dev");
     const collection = db.collection("lawData");
     const existingData = await collection.findOne({
-      tenVanBan: data.tenVanBan,
+      name: data.name,
     });
     if (existingData) {
-      console.log("Văn bản này đã được crawl", data.tenVanBan);
+      console.log("Văn bản này đã được crawl", data.name);
       return;
     }
     await collection.insertOne(data);

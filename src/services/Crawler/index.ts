@@ -20,16 +20,20 @@ import {
     isClose,
 } from "./regex";
 
+interface UrlDoc {
+    link: string;
+}
+
 export const crawler = async (url: string) => {
     try {
-        const checking = await checkLink(url);
-        if (checking) {
-            return {
-                status: "200",
-                message: "Link đã tồn tại",
-                law: checking,
-            };
-        }
+        // const checking = await checkLink(url);
+        // if (checking) {
+        //     return {
+        //         status: "200",
+        //         message: "Link đã tồn tại",
+        //         law: checking,
+        //     };
+        // }
         const browser = await puppeteer.launch({
             // headless: false,
             // slowMo: 50,
@@ -124,8 +128,8 @@ export const crawler = async (url: string) => {
                     tag: "",
                 };
             }
-            return
-        }
+            return;
+        };
         const checkKhoan = () => {
             if (khoan.name !== "") {
                 conText.content.push(khoan);
@@ -136,7 +140,7 @@ export const crawler = async (url: string) => {
                     tag: "",
                 };
             }
-        }
+        };
         const checkDiem = () => {
             if (diem.name !== "") {
                 khoan.content.push(diem);
@@ -147,7 +151,7 @@ export const crawler = async (url: string) => {
                     tag: "",
                 };
             }
-        }
+        };
 
         let checkPoint = 0;
         let current = 0;
@@ -182,9 +186,9 @@ export const crawler = async (url: string) => {
                 // parent = current;
                 current = 1;
 
-                checkDiem()
-                checkKhoan()
-                checkContext()
+                checkDiem();
+                checkKhoan();
+                checkContext();
 
                 conText.name = "phan" + part;
                 conText.title = line;
@@ -196,9 +200,9 @@ export const crawler = async (url: string) => {
                 // parent = current;
                 current = 1;
 
-                checkDiem()
-                checkKhoan()
-                checkContext()
+                checkDiem();
+                checkKhoan();
+                checkContext();
 
                 conText.name = "chuong" + chapter;
                 conText.title = line;
@@ -210,9 +214,9 @@ export const crawler = async (url: string) => {
                 // parent = current;
                 current = 1;
 
-                checkDiem()
-                checkKhoan()
-                checkContext()
+                checkDiem();
+                checkKhoan();
+                checkContext();
 
                 conText.name = "muc" + muc;
                 conText.title = line;
@@ -227,9 +231,9 @@ export const crawler = async (url: string) => {
                 // parent = current;
                 current = 1;
 
-                checkDiem()
-                checkKhoan()
-                checkContext()
+                checkDiem();
+                checkKhoan();
+                checkContext();
 
                 conText.name = "tieuMuc" + num;
                 conText.title = line;
@@ -245,9 +249,9 @@ export const crawler = async (url: string) => {
                 // parent = current;
                 current = 1;
 
-                checkDiem()
-                checkKhoan()
-                checkContext()
+                checkDiem();
+                checkKhoan();
+                checkContext();
 
                 conText.name = "dieu" + num;
                 conText.title = line;
@@ -263,7 +267,7 @@ export const crawler = async (url: string) => {
                 // parent = current;
                 current = 3;
 
-                checkDiem()
+                checkDiem();
 
                 diem.name = "diem" + num;
                 diem.title = line;
@@ -282,8 +286,8 @@ export const crawler = async (url: string) => {
                 // parent = current;
                 current = 2;
 
-                checkDiem()
-                checkKhoan()
+                checkDiem();
+                checkKhoan();
 
                 khoan.name = "khoan" + num;
                 khoan.title = line;
@@ -327,25 +331,34 @@ export const crawler = async (url: string) => {
                             });
                         // contents.header.push($(element).html());
                     } else if (checkPoint == 3) {
-                        checkDiem()
-                        checkKhoan()
-                        checkContext()
+                        checkDiem();
+                        checkKhoan();
+                        checkContext();
                         $(element)
                             .find("p")
                             .each((i, e) => {
-                                $(e).children().each((i,e) => {
-                                    const text = $(e)
-                                        .text()
-                                        .replace(/\n/g, "")
-                                        .replace(/ +/g, " ")
-                                        .trim();
-                                    if (text !== "") contents.footer.push(text);
-                                })
+                                // $(e)
+                                //     .children()
+                                //     .each((i, e) => {
+                                //         const text = $(e)
+                                //             .text()
+                                //             // .replace(/\n/g, "")
+                                //             // .replace(/ +/g, " ")
+                                //             .trim();
+                                //         if (text !== "")
+                                //             contents.footer.push(text);
+                                //     });
+                                const text = $(e).text().replace(/\n/g, "").trim();
+                                if (text !== "") contents.footer.push(text);
                             });
+                        // contents.footer.push($(element).html());
                         checkPoint++;
                     }
                 } else if (checkPoint < 3) {
-                    let paragraph = $(element).text().replace(/\n/g, " ").trim();
+                    let paragraph = $(element)
+                        .text()
+                        .replace(/\n/g, " ")
+                        .trim();
                     if (paragraph !== "Video Pháp Luật") {
                         readingCurrentLine(paragraph);
                     }
@@ -376,12 +389,13 @@ export const crawler = async (url: string) => {
         };
 
         await browser.close();
+        await new Promise((resolve) => setTimeout(resolve, 600000));
 
         // await saveData(law);
         return {
             status: "200",
             message: "Crawl thành công",
-            law: law,
+            url: law,
         };
     } catch (error) {
         console.log(error);
@@ -432,5 +446,19 @@ export const search = async (id: number) => {
             status: "500",
             message: "Error",
         };
+    }
+};
+
+export const getAllUrl = async function () {
+    try {
+        const db = client.db("law_dev");
+        const collection = db.collection("laws");
+        const allDocs: UrlDoc[] = await collection
+            .find({}, { projection: { link: 1, _id: 0 } })
+            .toArray();
+        return allDocs.map((doc) => doc.link);
+    } catch (error) {
+        console.error("Error occurred while checking data in MongoDB:", error);
+        throw error;
     }
 };
