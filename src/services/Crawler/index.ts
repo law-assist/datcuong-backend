@@ -26,14 +26,14 @@ interface UrlDoc {
 
 export const crawler = async (url: string) => {
     try {
-        // const checking = await checkLink(url);
-        // if (checking) {
-        //     return {
-        //         status: "200",
-        //         message: "Link đã tồn tại",
-        //         law: checking,
-        //     };
-        // }
+        const checking = await checkLink(url);
+        if (checking) {
+            return {
+                status: "200",
+                message: "Link đã tồn tại",
+                law: checking,
+            };
+        }
         const browser = await puppeteer.launch({
             // headless: false,
             // slowMo: 50,
@@ -348,7 +348,10 @@ export const crawler = async (url: string) => {
                                 //         if (text !== "")
                                 //             contents.footer.push(text);
                                 //     });
-                                const text = $(e).text().replace(/\n/g, "").trim();
+                                const text = $(e)
+                                    .text()
+                                    .replace(/\n/g, "")
+                                    .trim();
                                 if (text !== "") contents.footer.push(text);
                             });
                         // contents.footer.push($(element).html());
@@ -391,7 +394,7 @@ export const crawler = async (url: string) => {
         await browser.close();
         await new Promise((resolve) => setTimeout(resolve, 600000));
 
-        // await saveData(law);
+        await saveData(law);
         return {
             status: "200",
             message: "Crawl thành công",
