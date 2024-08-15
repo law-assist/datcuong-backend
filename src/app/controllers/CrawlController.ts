@@ -16,9 +16,29 @@ const data = [
         id: 4,
         url: "https://thuvienphapluat.vn/van-ban/Giao-thong-Van-tai/Nghi-dinh-19-2024-ND-CP-sua-doi-Nghi-dinh-48-2019-ND-CP-quan-ly-phuong-tien-vui-choi-duoi-nuoc-599548.aspx",
     },
+    {
+        id: 5,
+        url: "https://thuvienphapluat.vn/van-ban/Cong-nghe-thong-tin/Nghi-quyet-127-NQ-CP-2023-ap-dung-cap-thi-thuc-dien-tu-cho-cong-dan-cac-nuoc-vung-lanh-tho-575687.aspx",
+    },
+    {
+        id: 6,
+        url: "https://thuvienphapluat.vn/van-ban/The-thao-Y-te/Nghi-dinh-96-2023-ND-CP-huong-dan-Luat-Kham-benh-chua-benh-583328.aspx",
+    },
+    {
+        id: 7,
+        url: "https://thuvienphapluat.vn/van-ban/Thu-tuc-To-tung/Bo-luat-to-tung-dan-su-2015-296861.aspx",
+    },{
+        id: 8,
+        url: "https://thuvienphapluat.vn/van-ban/Trach-nhiem-hinh-su/Bo-luat-to-tung-hinh-su-2015-296884.aspx",
+    },{
+        id: 9,
+        url: "https://thuvienphapluat.vn/van-ban/Giao-thong-Van-tai/Nghi-dinh-44-2024-ND-CP-quan-ly-su-dung-tai-san-ket-cau-ha-tang-giao-thong-duong-bo-608235.aspx",
+    },
 ];
 
-import { crawler, search } from "../../services/Crawler";
+
+
+import { crawler, search, getAllUrl } from "../../services/Crawler";
 
 class CrawlController {
     // [GET] /crawl /start?url=http://www.example.com&depth=2
@@ -64,6 +84,26 @@ class CrawlController {
             }
         } else {
             res.status(404).send("URL not found for the given slug.");
+        }
+    }
+
+    // [GET] auto
+    async autoCrawl(req: any, res: any){
+        try {
+            let urls = await getAllUrl();
+            console.log("urls: ", urls);
+            for (let url of urls) {
+                let re = await crawler(url);
+                console.log("Crawled: ", url);
+            }
+            res.json({ message: "Crawling completed",
+                data: urls
+             });
+        } catch (error) {
+            console.error("Error occurred while crawling:", error);
+            res.status(500).send(
+                "An error occurred while crawling the URL."
+            );
         }
     }
 }
