@@ -17,7 +17,10 @@ export class Law extends BaseSchema {
   @Prop({ required: true })
   department: string;
 
-  @Prop({ required: true, unique: true, type: String, name: 'pdf_url' })
+  @Prop({ required: true, unique: true, type: String, name: 'base_url' })
+  baseUrl: string;
+
+  @Prop({ required: false, unique: true, type: String, name: 'pdf_url' })
   pdfUrl: string;
 
   @Prop({ required: true, name: 'number_doc' })
