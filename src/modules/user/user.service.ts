@@ -43,7 +43,6 @@ export class UserService {
     const _id = new ObjectId(id);
     try {
       const res = await this.userModel.updateOne({ _id: _id }, updateUserDto);
-      console.log(res);
       if (res.matchedCount === 0) {
         throw new BadRequestException('user_not_found');
       }

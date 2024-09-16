@@ -1,6 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import cheerio from 'cheerio';
 import puppeteer from 'puppeteer';
+import * as fs from 'fs';
+
 // import axios from 'axios';
 import {
   chuongRegex,
@@ -25,20 +27,12 @@ export class CrawlerService {
 
   async crawler(url: string) {
     try {
-      // const checking = await checkLink(url);
-      // if (checking) {
-      //   return {
-      //     status: '200',
-      //     message: 'Link đã tồn tại',
-      //     law: checking,
-      //   };
-      // }
       const browser = await puppeteer.launch({
         // headless: false,
         // slowMo: 50,
       });
       const page = await browser.newPage();
-      await page.goto(url);
+      await page.goto(url, { waitUntil: 'domcontentloaded' });
 
       //login
       // await page.waitForSelector("#usernameTextBox");
@@ -58,9 +52,9 @@ export class CrawlerService {
       // console.log("confirm");
       // await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      await page.waitForSelector('#aLuocDo');
-      await page.click('#aLuocDo');
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // await page.waitForSelector('#aLuocDo', { timeout: 60000 });
+      // await page.click('#aLuocDo');
+      // await new Promise((resolve) => setTimeout(resolve, 2000));
 
       const $ = cheerio.load(await page.content());
 
@@ -76,6 +70,9 @@ export class CrawlerService {
         .next()
         .text()
         .trim();
+
+      // const topic = $("td:contains('Lĩnh vực, ngành:')").next();
+      // console.log('topic', topic);
 
       const title = $('title').text().trim();
       const match = title.match(/(.+)\s+mới nhất$/);
@@ -374,18 +371,25 @@ export class CrawlerService {
           }
         });
 
-      const topic = $(
-        "#tab4 #viewingDocument .hd.fl:contains('Lĩnh vực, ngành:')",
+      await page.waitForSelector('#aLuocDo', { timeout: 60000 });
+      await page.click('#aLuocDo');
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const $$ = cheerio.load(await page.content());
+
+      const topic = $$(
+        "#tab4 #viewingDocument .att .hd.fl:contains('Lĩnh vực, ngành:')",
       )
         .next()
         .text()
         .trim();
+      console.log(topic);
 
       const law: CreateLawDto = {
         name: tenVanBan,
         category: loaiVanBan,
         department: coQuanBanHanh,
         pdfUrl: url,
+        baseUrl: url,
         numberDoc: soHieu,
         dateApproved: ngayBanHanh,
         fields: topic.split(', ') as Field[],
@@ -401,8 +405,29 @@ export class CrawlerService {
         data: newLaw,
       };
     } catch (error) {
-      console.log(error);
-      throw new BadRequestException('law_crawled_failed');
+      if (error.message.includes('duplicate')) {
+        if (error.message.includes('pdfUrl'))
+          throw new BadRequestException('law_pdf_existed');
+        if (error.message.includes('baseUrl'))
+          throw new BadRequestException('law_existed');
+      }
+      console.log('Error:', error.message);
+    }
+  }
+
+  async autoCrawler() {
+    const data = fs.readFileSync('urlsEdit.json', 'utf8');
+    const jsonData = JSON.parse(data.toString());
+    for (let i = 24300; i < jsonData.length; i++) {
+      const item = jsonData[i];
+      const existed = await this.lawService.checkLawExistence(item);
+
+      if (!existed) {
+        console.log(i, item);
+        await this.crawler(item);
+      } else {
+        console.log('existed', i);
+      }
     }
   }
 }

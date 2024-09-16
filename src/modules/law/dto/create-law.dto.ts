@@ -1,4 +1,4 @@
-import { IsObject, IsOptional, IsString, IsUrl } from 'class-validator';
+import { IsEnum, IsObject, IsOptional, IsString, IsUrl } from 'class-validator';
 import { Field } from 'src/common/enum/enum';
 import { LawContent, LawRelation } from 'src/common/types';
 
@@ -17,11 +17,16 @@ export class CreateLawDto {
   pdfUrl: string;
 
   @IsString()
+  @IsUrl()
+  baseUrl: string;
+
+  @IsString()
   numberDoc: string;
 
   @IsString()
   dateApproved: string;
 
+  @IsEnum(Field)
   fields: Field[];
 
   @IsObject()

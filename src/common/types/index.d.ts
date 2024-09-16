@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { Response } from './../interceptors/response.interceptor';
 import { RelationType } from 'typeorm/metadata/types/RelationTypes';
 import { MediaType } from '../enum/enum';
 
@@ -34,4 +36,14 @@ export interface LawRelation {
 export interface Media {
   url: string;
   type: MediaType;
+}
+
+export interface ResponseMessage {
+  _id: string;
+  sender_id: string;
+  title: string;
+  content: string;
+  media: Media[];
+  createdAt: Date | Date.now;
+  updatedAt: Date | Date.now;
 }
