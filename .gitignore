@@ -15,9 +15,17 @@ lerna-debug.log*
 # OS
 .DS_Store
 
+<<<<<<< HEAD
 # Tests
 /coverage
 /.nyc_output
+=======
+# Dependency directories (remove the comment below to include it)
+node_modules
+dist
+test.html
+# vendor/
+>>>>>>> fc87fa2 (fixxing crawler)
 
 # IDEs and editors
 /.idea
