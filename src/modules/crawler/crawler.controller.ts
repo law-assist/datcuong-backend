@@ -18,13 +18,19 @@ import { Public } from 'src/decorators/roles.decorator';
 export class CrawlerController {
   constructor(private readonly crawlerService: CrawlerService) {}
 
-  @Post()
+  @Post('crawler')
   @Public()
   create(@Body() createCrawlerDto: CreateCrawlerDto) {
     return this.crawlerService.crawler(createCrawlerDto.url);
   }
 
-  @Get()
+  @Public()
+  @Get('auto')
+  autoCrawler() {
+    return this.crawlerService.autoCrawler();
+  }
+
+  @Get('find-all')
   findAll() {}
 
   @Get(':id')

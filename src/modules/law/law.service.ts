@@ -14,7 +14,6 @@ export class LawService {
 
   async create(createLawDto: CreateLawDto): Promise<Law> {
     try {
-      console.log(createLawDto);
       const newLaw = await this.lawModel.create(createLawDto);
       return newLaw;
     } catch (err) {
@@ -22,6 +21,20 @@ export class LawService {
       throw new Error(`Failed to create law: ${err.message}`);
     }
   }
+
+  async checkLawExistence(url: string): Promise<boolean> {
+    try {
+      const law = await this.lawModel.findOne({ baseUrl: url });
+      if (law) {
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Error checking law existence:', err); // Use a more descriptive message
+      throw new Error(`Failed to check law existence: ${err.message}`);
+    }
+  }
+
   findAll() {
     return `This action returns all law`;
   }
