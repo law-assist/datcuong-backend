@@ -1,0 +1,13 @@
+version: '3.5'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tnvl_backend
+    env_file:
+      - .env
+    ports:
+      - '5000:5000'
+    volumes:
+      - ./src:/app/src

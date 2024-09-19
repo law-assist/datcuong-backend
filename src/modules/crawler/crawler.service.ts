@@ -28,8 +28,22 @@ export class CrawlerService {
   async crawler(url: string) {
     try {
       const browser = await puppeteer.launch({
-        // headless: false,
-        // slowMo: 50,
+        headless: true,
+        // args: [
+        //   '--disable-setuid-sandbox',
+        //   '--no-sandbox',
+        //   '--disable-gpu',
+        //   '--single-process',
+        //   '--no-zygote',
+        //   '--disable-dev-shm-usage',
+        // ],
+        // dumpio: true,
+        // protocolTimeout: 20000,
+        // executablePath:
+        //   process.env.NODE_ENV === 'production'
+        //     ? process.env.PUPPETEER_EXECUTABLE_PATH ||
+        //       '/usr/bin/chromium-browser'
+        //     : puppeteer.executablePath(),
       });
       const page = await browser.newPage();
       await page.goto(url, { waitUntil: 'domcontentloaded' });
@@ -418,7 +432,10 @@ export class CrawlerService {
   async autoCrawler() {
     const data = fs.readFileSync('urlsEdit.json', 'utf8');
     const jsonData = JSON.parse(data.toString());
-    for (let i = 24300; i < jsonData.length; i++) {
+    const crawled: number = process.env.CRAWLED
+      ? Number(process.env.CRAWLED)
+      : 33400;
+    for (let i = crawled; i < jsonData.length; i++) {
       const item = jsonData[i];
       const existed = await this.lawService.checkLawExistence(item);
 
