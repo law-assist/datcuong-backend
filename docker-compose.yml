@@ -11,3 +11,9 @@ services:
       - '5000:5000'
     volumes:
       - ./src:/app/src
+    environment:
+      - NODE_OPTIONS=--max-old-space-size=4096  # Increase the memory limit to 4GB
+    deploy:
+      resources:
+        limits:
+          memory: 4g  # Limit the container to 4GB of memory

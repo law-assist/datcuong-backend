@@ -41,9 +41,13 @@ export class AuthService {
     };
     const tokens = await this.getTokens(payload);
     return {
-      user: payload.user,
-      tokens,
+      data: {
+        user: payload.user,
+        tokens,
+      },
       message: 'login_success',
+      status: 'success',
+      statusCode: 200,
     };
   }
 
@@ -58,6 +62,8 @@ export class AuthService {
     }
     return {
       message: 'user_created',
+      status: 'success',
+      statusCode: 201,
     };
   }
 

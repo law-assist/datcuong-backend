@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { BadRequestException, Injectable } from '@nestjs/common';
-import cheerio from 'cheerio';
-import puppeteer from 'puppeteer';
+// import cheerio from 'cheerio';
+// import puppeteer from 'puppeteer';
 import * as fs from 'fs';
-
+const cheerio = require('cheerio');
+const puppeteer = require('puppeteer');
 // import axios from 'axios';
 import {
   chuongRegex,
@@ -26,27 +28,33 @@ export class CrawlerService {
   constructor(private lawService: LawService) {}
 
   async crawler(url: string) {
+    console.log(url, Date());
+
+    const browser = await puppeteer.launch({
+      userDataDir: './my-chrome-data',
+      headless: 'new',
+      slowMo: 50,
+      args: [
+        '--disable-setuid-sandbox',
+        '--no-sandbox',
+        // '--disable-gpu',
+        // '--disable-cache',
+        // '--single-process',
+        // '--no-zygote',
+        // '--no-startup-window',
+        '--disable-dev-shm-usage',
+      ],
+      protocolTimeout: 20000,
+      executablePath:
+        process.env.NODE_ENV === 'production'
+          ? process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser'
+          : puppeteer.executablePath(),
+    });
+
     try {
-      const browser = await puppeteer.launch({
-        headless: true,
-        // args: [
-        //   '--disable-setuid-sandbox',
-        //   '--no-sandbox',
-        //   '--disable-gpu',
-        //   '--single-process',
-        //   '--no-zygote',
-        //   '--disable-dev-shm-usage',
-        // ],
-        // dumpio: true,
-        // protocolTimeout: 20000,
-        // executablePath:
-        //   process.env.NODE_ENV === 'production'
-        //     ? process.env.PUPPETEER_EXECUTABLE_PATH ||
-        //       '/usr/bin/chromium-browser'
-        //     : puppeteer.executablePath(),
-      });
       const page = await browser.newPage();
-      await page.goto(url, { waitUntil: 'domcontentloaded' });
+      await page.goto(url, { timeout: 6000 });
+      console.log('iniital page');
 
       //login
       // await page.waitForSelector("#usernameTextBox");
@@ -70,7 +78,11 @@ export class CrawlerService {
       // await page.click('#aLuocDo');
       // await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      const $ = cheerio.load(await page.content());
+      let content = await page.content();
+      if (!content) {
+        throw new BadRequestException('Failed to load page content');
+      }
+      const $ = await cheerio.load(content);
 
       // const response = await axios.get(url);
       const soHieu = $("td:contains('Số hiệu:')").next().text().trim();
@@ -385,10 +397,19 @@ export class CrawlerService {
           }
         });
 
-      await page.waitForSelector('#aLuocDo', { timeout: 60000 });
+      console.log('test');
+
+      await page.waitForSelector('#aLuocDo', { timeout: 6000 });
       await page.click('#aLuocDo');
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      const $$ = cheerio.load(await page.content());
+
+      content = (await page.content()) || '';
+
+      if (!content) {
+        throw new BadRequestException('Failed to load page content');
+      }
+
+      const $$ = cheerio.load(content);
 
       const topic = $$(
         "#tab4 #viewingDocument .att .hd.fl:contains('Lĩnh vực, ngành:')",
@@ -411,6 +432,9 @@ export class CrawlerService {
         relationLaws: [],
       };
 
+      console.log('test2');
+
+      // await browser.disconnect();
       await browser.close();
 
       const newLaw = await this.lawService.create(law);
@@ -426,7 +450,13 @@ export class CrawlerService {
           throw new BadRequestException('law_existed');
       }
       console.log('Error:', error.message);
+    } finally {
+      await browser.close();
+
+      const dir = './my-chrome-data';
+      fs.rmSync(dir, { recursive: true, force: true });
     }
+    await browser.close();
   }
 
   async autoCrawler() {
@@ -440,7 +470,6 @@ export class CrawlerService {
       const existed = await this.lawService.checkLawExistence(item);
 
       if (!existed) {
-        console.log(i, item);
         await this.crawler(item);
       } else {
         console.log('existed', i);

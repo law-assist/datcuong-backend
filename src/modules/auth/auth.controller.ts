@@ -4,6 +4,7 @@ import {
   Post,
   Body,
   HttpCode,
+  UseInterceptors,
   // Patch,
   // Param,
   // Delete,
@@ -13,9 +14,11 @@ import { UserDto } from './dto/user.dto';
 import { Public } from 'src/decorators/roles.decorator';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { ResponseInterceptor } from 'src/common/interceptors/response.interceptor';
 // import { UserService } from '../user/user.service';
 
 @Controller('auth')
+@UseInterceptors(ResponseInterceptor)
 @ApiTags('auth')
 @Public()
 export class AuthController {
