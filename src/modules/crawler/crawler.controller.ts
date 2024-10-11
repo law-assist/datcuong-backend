@@ -18,7 +18,7 @@ import { Public } from 'src/decorators/roles.decorator';
 export class CrawlerController {
   constructor(private readonly crawlerService: CrawlerService) {}
 
-  @Post('crawler')
+  @Post('url')
   @Public()
   create(@Body() createCrawlerDto: CreateCrawlerDto) {
     return this.crawlerService.crawler(createCrawlerDto.url);

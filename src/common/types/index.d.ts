@@ -47,3 +47,17 @@ export interface ResponseMessage {
   createdAt: Date | Date.now;
   updatedAt: Date | Date.now;
 }
+export interface Options {
+  page: number;
+  limit: number;
+}
+
+export interface LawQuery {
+  name: string;
+  field: string;
+  category: string;
+  department: string;
+  year: string;
+  page: number;
+  size: number;
+}

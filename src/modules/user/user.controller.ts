@@ -6,6 +6,9 @@ import {
   Patch,
   UseInterceptors,
   Get,
+  HttpCode,
+  NotFoundException,
+  BadRequestException,
   // Patch,
   // Param,
   // Delete,
@@ -27,10 +30,14 @@ export class UserController {
   constructor(private readonly service: UserService) {}
 
   @Get('user-profile')
-  getUserProfile(@User() user: any) {
+  async getUserProfile(@User() user: any) {
+    const getUser = await this.service.getUserProfile(user._id);
+    if (!getUser) {
+      throw new NotFoundException('user_not_found');
+    }
     return {
       message: 'user_profile',
-      data: user,
+      data: getUser,
     };
   }
 
@@ -44,8 +51,19 @@ export class UserController {
     return this.service.createUser(user);
   }
 
+  @HttpCode(200)
   @Patch('update')
-  update(@Body() updateUser: UpdateUserDto, @User() user: any) {
-    return this.service.updateUser(user._id, updateUser);
+  async update(@Body() updateUser: UpdateUserDto, @User() user: any) {
+    const message = await this.service.updateUser(user._id, updateUser);
+    if (!message) {
+      return new NotFoundException('user_not_found');
+    }
+    if (message === 'user_updated') {
+      return {
+        message: message,
+      };
+    }
+
+    throw new BadRequestException(message);
   }
 }

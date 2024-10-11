@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { AutoMap } from '@automapper/classes';
 import { HydratedDocument } from 'mongoose';
 import { BaseSchema } from 'src/common/base/base.schema';
 import { Field, Role, UserStatus } from 'src/common/enum/enum';
@@ -7,6 +8,7 @@ export type UserDocument = HydratedDocument<User>;
 
 @Schema({ versionKey: false })
 export class User extends BaseSchema {
+  @AutoMap()
   @Prop({
     required: true,
     name: 'full_name',
@@ -14,6 +16,7 @@ export class User extends BaseSchema {
   })
   fullName: string;
 
+  @AutoMap()
   @Prop({
     required: true,
     unique: true,
@@ -21,22 +24,25 @@ export class User extends BaseSchema {
   })
   email: string;
 
+  @AutoMap()
   @Prop({
-    required: true,
+    required: false,
     unique: true,
     type: String,
     name: 'phone_number',
   })
   phoneNumber: string;
 
+  @AutoMap()
   @Prop({
-    required: true,
+    required: false,
     type: Date,
   })
   dob: Date;
 
+  @AutoMap()
   @Prop({
-    required: true,
+    required: false,
   })
   address: string;
 
@@ -45,6 +51,7 @@ export class User extends BaseSchema {
   })
   password: string;
 
+  @AutoMap()
   @Prop({
     required: false,
     type: String,
@@ -53,6 +60,7 @@ export class User extends BaseSchema {
   })
   avatarUrl: string;
 
+  @AutoMap()
   @Prop({
     required: false,
     enum: Role,
@@ -60,6 +68,7 @@ export class User extends BaseSchema {
   })
   role: Role;
 
+  @AutoMap()
   @Prop({
     required: false,
     type: [String],
@@ -68,6 +77,7 @@ export class User extends BaseSchema {
   })
   field: Field[];
 
+  @AutoMap()
   @Prop({
     required: false,
     type: String,

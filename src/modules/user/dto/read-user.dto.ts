@@ -1,11 +1,18 @@
 import { ObjectId } from 'mongodb';
 import { CreateUserDto } from './create-user.dto';
-import { Role, UserStatus } from 'src/common/enum/enum';
+import { UserStatus } from 'src/common/enum/enum';
+import { AutoMap } from '@automapper/classes';
 
 export class ReadUserDto extends CreateUserDto {
+  @AutoMap()
   _id: ObjectId;
+
+  @AutoMap()
   avatarUrl: string;
-  role: Role;
+
+  @AutoMap()
   status: UserStatus;
+
+  @AutoMap()
   field: string[] = [];
 }

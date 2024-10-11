@@ -76,7 +76,7 @@ export class AuthService {
         },
         {
           secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-          expiresIn: '15m',
+          expiresIn: '1h',
         },
       ),
       this.jwtService.signAsync(
@@ -95,5 +95,27 @@ export class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+  async refreshToken(id: string): Promise<any> {
+    const user = await this.userService.getUserProfile(id);
+    if (!user) {
+      throw new UnauthorizedException('user_not_found');
+    }
+    const payload = {
+      user: {
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        phoneNumber: user.phoneNumber,
+        status: user.status,
+        field: user.field,
+        avatarUrl: user.avatarUrl,
+      },
+    };
+
+    const tokens = await this.getTokens(payload);
+    return tokens || null;
   }
 }

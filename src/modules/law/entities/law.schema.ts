@@ -1,3 +1,4 @@
+import { AutoMap } from '@automapper/classes';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { BaseSchema } from 'src/common/base/base.schema';
@@ -8,33 +9,42 @@ export type LawDocument = HydratedDocument<Law>;
 
 @Schema({ versionKey: false })
 export class Law extends BaseSchema {
+  @AutoMap()
   @Prop({ required: true })
   name: string;
 
+  @AutoMap()
   @Prop({ required: true })
   category: string;
 
+  @AutoMap()
   @Prop({ required: true })
   department: string;
 
   @Prop({ required: true, unique: true, type: String, name: 'base_url' })
   baseUrl: string;
 
+  @AutoMap()
   @Prop({ required: false, unique: true, type: String, name: 'pdf_url' })
   pdfUrl: string;
 
+  @AutoMap()
   @Prop({ required: true, name: 'number_doc' })
   numberDoc: string;
 
+  @AutoMap()
   @Prop({ required: true, name: 'date_approved' })
   dateApproved: string;
 
+  @AutoMap()
   @Prop({ required: true, type: [String], enum: Field })
   fields: Field[];
 
+  @AutoMap()
   @Prop({ required: true, type: Object })
   content: LawContent;
 
+  @AutoMap()
   @Prop({ required: true, type: [Object], name: 'relation_laws' })
   relationLaws: LawRelation[];
 
