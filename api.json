@@ -1,4 +1,9 @@
-{
-  "email": "qnvn2101@gmail.com",
-  "password": "123456A"
-}
+[
+  {
+    "email": "qnvn2101@gmail.com",
+    "password": "123456A"
+  },
+  {
+    "error": "104"
+  }
+]

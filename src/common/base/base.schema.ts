@@ -1,17 +1,18 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, CallbackError } from 'mongoose';
+import * as moment from 'moment-timezone';
 
 @Schema({ versionKey: false })
 export class BaseSchema extends Document {
   @Prop({
-    default: Date.now,
+    default: () => moment().tz('Asia/Bangkok').toDate(),
     type: Date,
     name: 'created_at',
   })
   createdAt: Date;
 
   @Prop({
-    default: Date.now,
+    default: () => moment().tz('Asia/Bangkok').toDate(),
     type: Date,
     name: 'updated_at',
   })
@@ -28,14 +29,14 @@ export class BaseSchema extends Document {
 const BaseSchemaFactory = SchemaFactory.createForClass(BaseSchema);
 
 BaseSchemaFactory.pre('save', function (next: (err?: CallbackError) => void) {
-  this.updatedAt = new Date();
+  this.updatedAt = moment().tz('Asia/Bangkok').toDate();
   next();
 });
 
 BaseSchemaFactory.pre(
   'findOneAndUpdate',
   function (next: (err?: CallbackError) => void) {
-    this.set({ updatedAt: new Date() });
+    this.set({ updatedAt: moment().tz('Asia/Bangkok').toDate() });
     next();
   },
 );
@@ -43,7 +44,7 @@ BaseSchemaFactory.pre(
 BaseSchemaFactory.pre(
   'findOneAndDelete',
   function (next: (err?: CallbackError) => void) {
-    this.set({ updatedAt: new Date() });
+    this.set({ updatedAt: moment().tz('Asia/Bangkok').toDate() });
     this.set({ isDeleted: true });
     next();
   },

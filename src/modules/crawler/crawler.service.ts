@@ -22,6 +22,9 @@ import { Content, Context, LawContent } from 'src/common/types';
 import { Field } from 'src/common/enum/enum';
 import { CreateLawDto } from '../law/dto/create-law.dto';
 import { LawService } from '../law/law.service';
+import axios from 'axios';
+import { stringToDate } from './helper';
+import { hightLawList, skipLawDepartmentWord } from 'src/common/const';
 
 @Injectable()
 export class CrawlerService {
@@ -97,15 +100,22 @@ export class CrawlerService {
         .text()
         .trim();
 
-      // const topic = $("td:contains('Lĩnh vực, ngành:')").next();
-      // console.log('topic', topic);
-
       const title = $('title').text().trim();
       const match = title.match(/(.+)\s+mới nhất$/);
       const tenVanBan = match ? match[1] : title;
       // const now = moment()
       //     .tz("Asia/Ho_Chi_Minh")
       //     .format("YYYY-MM-DD HH:mm:ss");
+
+      if (!hightLawList.includes(loaiVanBan)) {
+        await browser.close();
+        return;
+      }
+
+      if (skipLawDepartmentWord.some((word) => coQuanBanHanh.includes(word))) {
+        await browser.close();
+        return;
+      }
 
       const contents: LawContent = {
         header: [],
@@ -207,7 +217,6 @@ export class CrawlerService {
           part++;
           checkPoint = 2;
 
-          // parent = current;
           current = 1;
 
           checkDiem();
@@ -221,7 +230,6 @@ export class CrawlerService {
           chapter++;
           checkPoint = 2;
 
-          // parent = current;
           current = 1;
 
           checkDiem();
@@ -235,7 +243,7 @@ export class CrawlerService {
           muc++;
           matches = line.match(mucRegex) || [];
           num = matches[1];
-          // parent = current;
+
           current = 1;
 
           checkDiem();
@@ -248,12 +256,11 @@ export class CrawlerService {
           lawContent.value = line.substring(matches[0].length).trim();
           conText.content.push(lawContent);
 
-          // conText.content.push(line.slice(line.indexOf(".") + 2));
           return;
         } else if (tieuMucRegex.test(line)) {
           matches = line.match(tieuMucRegex) || [];
           num = matches[1];
-          // parent = current;
+
           current = 1;
 
           checkDiem();
@@ -272,7 +279,6 @@ export class CrawlerService {
 
           num = matches[1];
 
-          // parent = current;
           current = 1;
 
           checkDiem();
@@ -281,7 +287,6 @@ export class CrawlerService {
 
           conText.name = 'dieu' + num;
           conText.title = line;
-          // conText.content.push(line.slice(line.indexOf(".") + 2));
           lawContent.value = line.substring(matches[0].length).trim();
           conText.content.push(lawContent);
 
@@ -290,18 +295,12 @@ export class CrawlerService {
           matches = line.match(diemRegex1) || line.match(diemRegex2) || [];
           num = matches[1];
 
-          // parent = current;
           current = 3;
 
           checkDiem();
 
           diem.name = 'diem' + num;
           diem.title = line;
-          // if(line.indexOf(")") !== -1) {
-          //     diem.content.push(line.slice(line.indexOf(")") + 2));
-          // } else if (line.indexOf(".") !== -1) {
-          //     diem.content.push(line.slice(line.indexOf(".") + 4));
-          // }
           lawContent.value = line.substring(matches[0].length).trim();
           diem.content.push(lawContent);
 
@@ -310,7 +309,6 @@ export class CrawlerService {
           matches = line.match(khoanRegex) || [];
           num = matches[1];
 
-          // parent = current;
           current = 2;
 
           checkDiem();
@@ -318,7 +316,6 @@ export class CrawlerService {
 
           khoan.name = 'khoan' + num;
           khoan.title = line;
-          // khoan.content.push(line.slice(line.indexOf(".") + 2));
           lawContent.value = line.substring(matches[0].length).trim();
           khoan.content.push(lawContent);
 
@@ -397,8 +394,6 @@ export class CrawlerService {
           }
         });
 
-      console.log('test');
-
       await page.waitForSelector('#aLuocDo', { timeout: 6000 });
       await page.click('#aLuocDo');
       await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -417,7 +412,6 @@ export class CrawlerService {
         .next()
         .text()
         .trim();
-      console.log(topic);
 
       const law: CreateLawDto = {
         name: tenVanBan,
@@ -426,18 +420,23 @@ export class CrawlerService {
         pdfUrl: url,
         baseUrl: url,
         numberDoc: soHieu,
-        dateApproved: ngayBanHanh,
+        dateApproved: stringToDate(ngayBanHanh),
         fields: topic.split(', ') as Field[],
         content: contents,
         relationLaws: [],
       };
 
-      console.log('test2');
-
       // await browser.disconnect();
       await browser.close();
 
+      if (!hightLawList.includes(law.category)) return;
+
       const newLaw = await this.lawService.create(law);
+      if (!newLaw) {
+        throw new BadRequestException('Failed to create law');
+      } else {
+        console.log('law_crawled');
+      }
       return {
         message: 'law_crawled',
         data: newLaw,
@@ -460,20 +459,45 @@ export class CrawlerService {
   }
 
   async autoCrawler() {
-    const data = fs.readFileSync('urlsEdit.json', 'utf8');
-    const jsonData = JSON.parse(data.toString());
-    const crawled: number = process.env.CRAWLED
-      ? Number(process.env.CRAWLED)
-      : 33400;
-    for (let i = crawled; i < jsonData.length; i++) {
-      const item = jsonData[i];
-      const existed = await this.lawService.checkLawExistence(item);
-
-      if (!existed) {
-        await this.crawler(item);
+    let isFinish = false;
+    let page = 1;
+    let count = 0;
+    while (!isFinish) {
+      const urls = await this.getUrls(page);
+      if (urls.length === 0) {
+        isFinish = true;
       } else {
-        console.log('existed', i);
+        for (const url of urls) {
+          console.log(url);
+          const existed = await this.lawService.checkLawExistence(url);
+          if (existed) {
+            count++;
+            if (count === 20) {
+              isFinish = true;
+              break;
+            }
+          } else await this.crawler(url);
+        }
+        page++;
       }
     }
   }
+
+  getUrls = async (page: number) => {
+    const url = `https://thuvienphapluat.vn/page/tim-van-ban.aspx?area=0&page=${page}`;
+    try {
+      const response = await axios.get(url);
+      const $ = cheerio.load(response.data);
+      const urls: any[] = [];
+      $('.nq .nqTitle a').each((index, element) => {
+        const link = $(element).attr('href');
+        urls.push(link);
+      });
+
+      return urls;
+    } catch (error) {
+      console.error(`Error fetching URLs: ${error}`);
+      return [];
+    }
+  };
 }

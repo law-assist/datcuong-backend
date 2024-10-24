@@ -2,7 +2,7 @@ import { AutoMap } from '@automapper/classes';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { BaseSchema } from 'src/common/base/base.schema';
-import { Field } from 'src/common/enum/enum';
+import { Category, Field } from 'src/common/enum/enum';
 import { LawContent, LawRelation } from 'src/common/types';
 
 export type LawDocument = HydratedDocument<Law>;
@@ -14,8 +14,8 @@ export class Law extends BaseSchema {
   name: string;
 
   @AutoMap()
-  @Prop({ required: true })
-  category: string;
+  @Prop({ required: true, type: String, enum: Category })
+  category: Category;
 
   @AutoMap()
   @Prop({ required: true })
@@ -34,7 +34,7 @@ export class Law extends BaseSchema {
 
   @AutoMap()
   @Prop({ required: true, name: 'date_approved' })
-  dateApproved: string;
+  dateApproved: Date;
 
   @AutoMap()
   @Prop({ required: true, type: [String], enum: Field })
@@ -64,6 +64,11 @@ export class Law extends BaseSchema {
 }
 
 const LawSchema = SchemaFactory.createForClass(Law);
+
+LawSchema.index({ name: 'text' }, { default_language: 'none' });
+LawSchema.index({ field: 1 });
+LawSchema.index({ category: 1 });
+LawSchema.index({ department: 1 });
 
 LawSchema.pre('save', function (next) {
   this.updatedAt = new Date();

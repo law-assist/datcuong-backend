@@ -35,6 +35,7 @@ export interface LawRelation {
 
 export interface Media {
   url: string;
+  name: string;
   type: MediaType;
 }
 

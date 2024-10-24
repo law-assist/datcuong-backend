@@ -16,11 +16,9 @@ export class Request extends BaseSchema {
   @Prop({ type: [{ type: SchemaTypes.Mixed }], required: false })
   media: Media[];
 
-  // Reference to the User model for the user who made the request
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User', required: true })
   userRequestId: Types.ObjectId;
 
-  // Reference to the User model for the user who responded
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User', required: false })
   userResponseId?: Types.ObjectId;
 
@@ -35,6 +33,12 @@ export class Request extends BaseSchema {
 }
 
 const RequestSchema = SchemaFactory.createForClass(Request);
+
+RequestSchema.index({ title: 'text' });
+RequestSchema.index({ field: 1 });
+RequestSchema.index({ status: 1 });
+RequestSchema.index({ userRequestId: 1 });
+RequestSchema.index({ userResponseId: 1 });
 
 RequestSchema.pre('save', function (next) {
   this.updatedAt = new Date();

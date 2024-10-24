@@ -1,13 +1,17 @@
+//
+import { InjectMapper } from '@automapper/nestjs';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateLawDto } from './dto/create-law.dto';
-import { UpdateLawDto } from './dto/update-law.dto';
-import { Law } from './entities/law.schema';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Connection, Model } from 'mongoose';
-import { InjectMapper } from '@automapper/nestjs';
 import { Mapper } from '@automapper/core';
+
+import { Law } from './entities/law.schema';
+import { UpdateLawDto } from './dto/update-law.dto';
+
+import { CreateLawDto } from './dto/create-law.dto';
 import { LawQuery } from 'src/common/types';
-import { removeVietnameseTones } from 'src/helpers';
+import { hightLawList } from 'src/common/const';
+// import { Category, Department, Field } from 'src/common/enum/enum';
 
 @Injectable()
 export class LawService {
@@ -23,7 +27,7 @@ export class LawService {
       const newLaw = await this.lawModel.create(createLawDto);
       return newLaw;
     } catch (err) {
-      console.error('Error creating law:', err); // Use a more descriptive message
+      console.error('Error creating law:', err);
       throw new Error(`Failed to create law: ${err.message}`);
     }
   }
@@ -46,19 +50,19 @@ export class LawService {
       limit = 10; // Default values for page and limit
 
     const result = await this.lawModel.aggregate([
-      {
-        $addFields: {
-          dateApproved: {
-            $dateFromString: {
-              dateString: '$dateApproved',
-              format: '%d/%m/%Y', // Specify the format as DD/MM/YYYY
-            },
-          },
-        },
-        // $addFields: {
-        //   dateApprovedLength: { $strLenCP: '$dateApproved' }, // Calculate length of dateApproved string
-        // },
-      },
+      // {
+      //   $addFields: {
+      //     dateApproved: {
+      //       $dateFromString: {
+      //         dateString: '$dateApproved',
+      //         format: '%d/%m/%Y', // Specify the format as DD/MM/YYYY
+      //       },
+      //     },
+      //   },
+      //   // $addFields: {
+      //   //   dateApprovedLength: { $strLenCP: '$dateApproved' }, // Calculate length of dateApproved string
+      //   // },
+      // },
       // {
       //   $project: {
       //     _id: 1,
@@ -96,41 +100,45 @@ export class LawService {
   }
 
   async searchLaw(query?: LawQuery) {
-    // return await this.findAll();
+    console.log(query);
     const { name, field, category, department, year } = query;
     const page = Number(query.page) || 1;
     const size = Number(query.size) || 10;
+    // const year = query.year
+    //   ? query.year.toString()
+    //   : name
+    //     ? null
+    //     : new Date().getFullYear().toString();
+    // new Date().getFullYear().toString()
+    console.log(year);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const normalizedSearchName = name
-        ? removeVietnameseTones(name).toLowerCase()
-        : null;
+      const matchConditions: any[] = [{ isDeleted: false }];
 
-      const matchConditions: any[] = [];
-
-      if (name) {
+      if (year) {
         matchConditions.push({
-          name: {
-            $regex: name,
-            $options: 'i',
+          $expr: {
+            $eq: [{ $year: '$dateApproved' }, parseInt(year)],
           },
         });
       }
 
       if (field) {
         matchConditions.push({
-          field: {
-            $regex: field,
-            $options: 'i',
-          },
+          fields: field,
         });
       }
 
       if (category) {
         matchConditions.push({
-          category: {
-            $regex: category,
-            $options: 'i',
+          category: category,
+        });
+      }
+
+      if (name) {
+        matchConditions.push({
+          $text: {
+            $search: name,
+            $caseSensitive: false,
           },
         });
       }
@@ -144,28 +152,12 @@ export class LawService {
         });
       }
 
-      if (year) {
-        matchConditions.push({
-          $expr: {
-            $eq: [{ $year: '$dateApproved' }, parseInt(year)],
-          },
-        });
-      }
-
       const matchStage =
         matchConditions.length > 0 ? { $and: matchConditions } : {};
 
+      console.log('matchStage:', matchStage);
+
       const result = await this.lawModel.aggregate([
-        {
-          $addFields: {
-            dateApproved: {
-              $dateFromString: {
-                dateString: '$dateApproved',
-                format: '%d/%m/%Y',
-              },
-            },
-          },
-        },
         { $match: matchStage },
         { $sort: { dateApproved: -1 } },
         {
@@ -190,6 +182,71 @@ export class LawService {
     }
   }
 
+  async getAllDepartments() {
+    const departments = await this.lawModel
+      .find({ isDeleted: false })
+      .distinct('department');
+    return departments;
+  }
+
+  async getAllCategories() {
+    const categories = await this.lawModel.distinct('category');
+    return categories;
+  }
+
+  async softDeleteLawByDepartment(word: string) {
+    try {
+      const res = await this.lawModel.updateMany(
+        {
+          //department contains word
+          department: { $regex: word, $options: 'i' },
+          isDeleted: false,
+        },
+        {
+          isDeleted: true,
+          deletedAt: new Date(),
+        },
+      );
+      console.log('Soft deleted laws by department:', res.modifiedCount);
+      return;
+    } catch (err: any) {
+      console.error('Error soft deleting law by department:', err); // Use a more descriptive message
+      throw new Error(
+        `Failed to soft delete law by department: ${err.message}`,
+      );
+    }
+  }
+
+  async softDeleteUnnecessaryLaws() {
+    while (true) {
+      try {
+        const laws: any[] = await this.lawModel
+          .find({
+            category: { $nin: hightLawList },
+            isDeleted: false,
+          })
+          .limit(100);
+        console.log('Soft deleting unnecessary laws...');
+        if (laws.length === 0) {
+          return;
+        }
+        for (const law of laws) {
+          console.log('Processing:', law.baseUrl);
+          console.log('law.category:', law.category);
+          const res = await this.remove(law._id);
+          if (res) {
+            console.log('Soft deleted:', law.baseUrl);
+          }
+        }
+      } catch (err: any) {
+        console.error('Error soft deleting unnecessary laws:', err); // Use a more descriptive message
+        // throw new Error(
+        //   `Failed to soft delete unnecessary laws: ${err.message}`,
+        // );
+      }
+    }
+  }
+
   async update(id: string, updateLawDto: UpdateLawDto) {
     const law = await this.lawModel.findByIdAndUpdate(id, updateLawDto);
     if (!law) {
@@ -201,12 +258,51 @@ export class LawService {
   }
 
   async remove(id: string) {
-    const law = await this.lawModel.findByIdAndDelete(id);
+    const law = await this.lawModel.findByIdAndUpdate(id, {
+      isDeleted: true,
+      deletedAt: new Date(),
+    });
     if (!law) {
       throw new NotFoundException('not_found');
     }
-    return {
-      message: 'success',
-    };
+    return law;
+  }
+
+  async dateStringToDates() {
+    try {
+      while (true) {
+        const laws = await this.lawModel
+          .find({
+            dateApproved: { $type: 'string' },
+          })
+          .limit(100);
+        console.log('Converting date strings to dates...');
+        if (laws.length === 0) {
+          return;
+        }
+
+        for (const law of laws) {
+          console.log('Processing:', law.baseUrl);
+          const dateStr = law.dateApproved;
+          console.log('dateStr:', dateStr);
+          // const [day, month, year] = dateStr.split('/');
+          // const date = new Date(`${year}-${month}-${day}`);
+
+          const res = await this.lawModel.updateOne(
+            { _id: law._id },
+            { $set: { dateApproved: dateStr } },
+          );
+
+          if (res.modifiedCount > 0) {
+            console.log('Updated:', law.baseUrl);
+          }
+        }
+      }
+    } catch (err: any) {
+      console.error('Error converting date strings to dates:', err); // Use a more descriptive message
+      // throw new Error(
+      //   `Failed to convert date strings to dates: ${err.message}`,
+      // );
+    }
   }
 }
