@@ -1,6 +1,5 @@
 import {
   Controller,
-  // Get,
   Post,
   Body,
   Patch,
@@ -9,18 +8,18 @@ import {
   HttpCode,
   NotFoundException,
   BadRequestException,
-  // Patch,
   // Param,
   // Delete,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserDto } from '../auth/dto/user.dto';
-import { ReadUserDto } from './dto/read-user.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from 'src/common/decorators/user.decorator';
 import { API_BEARER_AUTH } from 'src/constants/constants';
 import { ResponseInterceptor } from 'src/common/interceptors/response.interceptor';
+import { CreateUserDto } from './dto/create-user.dto';
+import { ReadUserDto } from './dto/read-user.dto';
 
 @Controller('user')
 @UseInterceptors(ResponseInterceptor)
@@ -31,7 +30,7 @@ export class UserController {
 
   @Get('user-profile')
   async getUserProfile(@User() user: any) {
-    const getUser = await this.service.getUserProfile(user._id);
+    const getUser: ReadUserDto = await this.service.getUserProfile(user._id);
     if (!getUser) {
       throw new NotFoundException('user_not_found');
     }
@@ -47,7 +46,7 @@ export class UserController {
   }
 
   @Post('signup')
-  register(@Body() user: ReadUserDto) {
+  register(@Body() user: CreateUserDto) {
     return this.service.createUser(user);
   }
 

@@ -7,7 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { Reflector } from '@nestjs/core';
-import { jwtConstants } from 'src/constants/constants';
+
 import { ROLES_KEY } from 'src/decorators/roles.decorator';
 import { Role } from '../enum/enum';
 
@@ -34,7 +34,7 @@ export class RoleGuard implements CanActivate {
     }
     try {
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: jwtConstants.secret,
+        secret: process.env.JWT_SECRET,
       });
       console.log('payload', payload);
       // 💡 We're assigning the payload to the request object here

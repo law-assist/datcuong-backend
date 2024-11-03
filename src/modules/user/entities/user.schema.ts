@@ -75,7 +75,7 @@ export class User extends BaseSchema {
     enum: Field,
     default: [],
   })
-  field: Field[];
+  fields: Field[];
 
   @AutoMap()
   @Prop({

@@ -46,6 +46,27 @@ export class RequestController {
     };
   }
 
+  @Post('response/:id')
+  async sendResponse(
+    @User() user: ReadUserDto,
+    @Body() body: any,
+    @Param('id') id: string,
+  ) {
+    const res = await this.requestService.sendResponse(
+      id,
+      user._id.toString(),
+      body,
+    );
+    if (!res) {
+      throw new BadRequestException('response_not_sent');
+    }
+
+    return {
+      message: 'success',
+      data: res,
+    };
+  }
+
   @Get()
   findAll() {
     // return this.requestService.findAll();
@@ -56,6 +77,24 @@ export class RequestController {
     const res = await this.requestService.getAllUserRequest(
       user._id.toString(),
       query,
+    );
+
+    if (!res) {
+      throw new NotFoundException('request_not_found');
+    }
+
+    return {
+      message: 'success',
+      data: res,
+    };
+  }
+
+  @Get('lawyer/:id')
+  async getLawyerRequest(@User() user: ReadUserDto, @Param('id') id: string) {
+    console.log(id);
+    const res = await this.requestService.getLawyerRequest(
+      id,
+      user._id.toString(),
     );
 
     if (!res) {

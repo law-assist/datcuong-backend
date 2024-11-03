@@ -43,6 +43,7 @@
     "moment-timezone": "^0.5.46",
     "mongodb": "^6.9.0",
     "mongoose": "^8.7.0",
+    "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "puppeteer": "^23.4.0",
     "reflect-metadata": "^0.2.0",

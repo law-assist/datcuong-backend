@@ -79,8 +79,16 @@ export class LawController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.lawService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    const law = await this.lawService.findOne(id);
+    if (!law) {
+      throw new NotFoundException('law_not_found');
+    }
+
+    return {
+      message: 'success',
+      data: law,
+    };
   }
 
   @Post()

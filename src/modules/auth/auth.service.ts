@@ -35,7 +35,7 @@ export class AuthService {
         role: userRes.role,
         phoneNumber: userRes.phoneNumber,
         status: userRes.status,
-        field: userRes.field,
+        field: userRes.fields,
         avatarUrl: userRes.avatarUrl,
       },
     };
@@ -75,7 +75,7 @@ export class AuthService {
           user: payload.user,
         },
         {
-          secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
+          secret: process.env.JWT_SECRET,
           expiresIn: '1h',
         },
       ),
@@ -85,7 +85,7 @@ export class AuthService {
           user: payload.user,
         },
         {
-          secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+          secret: process.env.JWT_SECRET,
           expiresIn: '7d',
         },
       ),
@@ -110,7 +110,7 @@ export class AuthService {
         role: user.role,
         phoneNumber: user.phoneNumber,
         status: user.status,
-        field: user.field,
+        fields: user.fields,
         avatarUrl: user.avatarUrl,
       },
     };

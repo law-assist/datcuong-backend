@@ -29,7 +29,7 @@ export class Law extends BaseSchema {
   pdfUrl: string;
 
   @AutoMap()
-  @Prop({ required: true, name: 'number_doc' })
+  @Prop({ required: true, unique: true, name: 'number_doc' })
   numberDoc: string;
 
   @AutoMap()
@@ -66,9 +66,11 @@ export class Law extends BaseSchema {
 const LawSchema = SchemaFactory.createForClass(Law);
 
 LawSchema.index({ name: 'text' }, { default_language: 'none' });
-LawSchema.index({ field: 1 });
-LawSchema.index({ category: 1 });
 LawSchema.index({ department: 1 });
+LawSchema.index({ fields: 1 });
+LawSchema.index({ category: 1 });
+LawSchema.index({ numberDoc: 1 });
+LawSchema.index({ dateApproved: -1 });
 
 LawSchema.pre('save', function (next) {
   this.updatedAt = new Date();

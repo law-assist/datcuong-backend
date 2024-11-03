@@ -89,18 +89,10 @@ export class LawService {
   }
 
   async findOne(id: string) {
-    const law = await this.lawModel.findById(id);
-    if (!law) {
-      throw new NotFoundException('not_found');
-    }
-    return {
-      data: law,
-      message: 'success',
-    };
+    return await this.lawModel.findById(id);
   }
 
   async searchLaw(query?: LawQuery) {
-    console.log(query);
     const { name, field, category, department, year } = query;
     const page = Number(query.page) || 1;
     const size = Number(query.size) || 10;
@@ -110,7 +102,6 @@ export class LawService {
     //     ? null
     //     : new Date().getFullYear().toString();
     // new Date().getFullYear().toString()
-    console.log(year);
     try {
       const matchConditions: any[] = [{ isDeleted: false }];
 
@@ -155,11 +146,9 @@ export class LawService {
       const matchStage =
         matchConditions.length > 0 ? { $and: matchConditions } : {};
 
-      console.log('matchStage:', matchStage);
-
       const result = await this.lawModel.aggregate([
         { $match: matchStage },
-        { $sort: { dateApproved: -1 } },
+        // { $sort: { dateApproved: -1 } },
         {
           $facet: {
             metadata: [{ $count: 'total' }],
@@ -284,7 +273,6 @@ export class LawService {
         for (const law of laws) {
           console.log('Processing:', law.baseUrl);
           const dateStr = law.dateApproved;
-          console.log('dateStr:', dateStr);
           // const [day, month, year] = dateStr.split('/');
           // const date = new Date(`${year}-${month}-${day}`);
 

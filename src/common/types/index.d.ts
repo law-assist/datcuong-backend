@@ -42,11 +42,10 @@ export interface Media {
 export interface ResponseMessage {
   _id: string;
   sender_id: string;
-  title: string;
   content: string;
-  media: Media[];
-  createdAt: Date | Date.now;
-  updatedAt: Date | Date.now;
+  medias?: Media[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 export interface Options {
   page: number;

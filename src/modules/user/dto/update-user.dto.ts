@@ -28,5 +28,5 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsOptional()
   @IsArray()
   @ApiProperty()
-  field?: Field[] = [];
+  fields?: Field[] = [];
 }

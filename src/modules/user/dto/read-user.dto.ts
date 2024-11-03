@@ -14,5 +14,5 @@ export class ReadUserDto extends CreateUserDto {
   status: UserStatus;
 
   @AutoMap()
-  field: string[] = [];
+  fields: string[] = [];
 }
