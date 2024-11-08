@@ -10,7 +10,7 @@ export class CreateRequestDto {
 
   @ApiProperty()
   @IsString()
-  @MaxLength(500)
+  @MaxLength(1000)
   content: string;
 
   @ApiProperty()

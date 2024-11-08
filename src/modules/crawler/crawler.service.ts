@@ -18,7 +18,7 @@ import {
   phanRegex,
   tieuMucRegex,
 } from './helper/regex';
-import { Content, Context, LawContent } from 'src/common/types';
+import { Context, LawContent } from 'src/common/types';
 import { Field } from 'src/common/enum/enum';
 import { CreateLawDto } from '../law/dto/create-law.dto';
 import { LawService } from '../law/law.service';
@@ -57,7 +57,6 @@ export class CrawlerService {
     try {
       const page = await browser.newPage();
       await page.goto(url, { timeout: 6000 });
-      console.log('iniital page');
 
       //login
       // await page.waitForSelector("#usernameTextBox");
@@ -108,11 +107,13 @@ export class CrawlerService {
       //     .format("YYYY-MM-DD HH:mm:ss");
 
       if (!hightLawList.includes(loaiVanBan)) {
+        console.log(loaiVanBan);
         await browser.close();
         return;
       }
 
       if (skipLawDepartmentWord.some((word) => coQuanBanHanh.includes(word))) {
+        console.log(coQuanBanHanh);
         await browser.close();
         return;
       }
@@ -130,21 +131,39 @@ export class CrawlerService {
         part = 0; // muc: Mục, part: Phần
       let conText: Context = {
         name: '',
-        title: '',
+        value: '',
         content: [],
         tag: '', //
+        internal_ner: [],
+        parent_ner: [],
+        aggregation_ner: [],
+        embedding: '',
+        reference: [],
+        classification: '',
       };
       let khoan: Context = {
         name: '',
-        title: '',
+        value: '',
         content: [],
         tag: '', //
+        internal_ner: [],
+        parent_ner: [],
+        aggregation_ner: [],
+        embedding: '',
+        reference: [],
+        classification: '',
       };
       let diem: Context = {
         name: '',
-        title: '',
+        value: '',
         content: [],
         tag: '',
+        internal_ner: [],
+        parent_ner: [],
+        aggregation_ner: [],
+        embedding: '',
+        reference: [],
+        classification: '',
       };
 
       const checkContext = () => {
@@ -152,9 +171,15 @@ export class CrawlerService {
           contents.mainContent.push(conText);
           conText = {
             name: '',
-            title: '',
+            value: '',
             content: [],
             tag: '',
+            internal_ner: [],
+            parent_ner: [],
+            aggregation_ner: [],
+            embedding: '',
+            reference: [],
+            classification: '',
           };
         }
         return;
@@ -164,9 +189,15 @@ export class CrawlerService {
           conText.content.push(khoan);
           khoan = {
             name: '',
-            title: '',
+            value: '',
             content: [],
             tag: '',
+            internal_ner: [],
+            parent_ner: [],
+            aggregation_ner: [],
+            embedding: '',
+            reference: [],
+            classification: '',
           };
         }
       };
@@ -175,9 +206,15 @@ export class CrawlerService {
           khoan.content.push(diem);
           diem = {
             name: '',
-            title: '',
+            value: '',
             content: [],
             tag: '',
+            internal_ner: [],
+            parent_ner: [],
+            aggregation_ner: [],
+            embedding: '',
+            reference: [],
+            classification: '',
           };
         }
       };
@@ -189,9 +226,17 @@ export class CrawlerService {
       const readingCurrentLine = (line: string) => {
         let num;
         let matches;
-        const lawContent: Content = {
+        const lawContent: Context = {
           value: line,
           embedding: '',
+          classification: '',
+          internal_ner: [],
+          reference: [],
+          name: '',
+          tag: '',
+          parent_ner: [],
+          aggregation_ner: [],
+          content: [],
         };
 
         if (isOpen.test(line)) {
@@ -199,10 +244,13 @@ export class CrawlerService {
         }
         if (openQuote) {
           if (current === 1) {
+            lawContent.name = 'line' + conText.content.length;
             conText.content.push(lawContent);
           } else if (current === 2) {
+            lawContent.name = 'line' + khoan.content.length;
             khoan.content.push(lawContent);
           } else if (current === 3) {
+            lawContent.name = 'line' + diem.content.length;
             diem.content.push(lawContent);
           }
 
@@ -224,7 +272,7 @@ export class CrawlerService {
           checkContext();
 
           conText.name = 'phan' + part;
-          conText.title = line;
+          conText.value = line;
           return;
         } else if (chuongRegex.test(line)) {
           chapter++;
@@ -237,7 +285,7 @@ export class CrawlerService {
           checkContext();
 
           conText.name = 'chuong' + chapter;
-          conText.title = line;
+          conText.value = line;
           return;
         } else if (mucRegex.test(line)) {
           muc++;
@@ -251,10 +299,12 @@ export class CrawlerService {
           checkContext();
 
           conText.name = 'muc' + muc;
-          conText.title = line;
+          conText.value = line;
           conText.tag = 'chuong' + chapter;
-          lawContent.value = line.substring(matches[0].length).trim();
-          conText.content.push(lawContent);
+          // lawContent.value = line.substring(matches[0].length).trim();
+          lawContent.value = line;
+          lawContent.name = 'line' + khoan.content.length;
+          // conText.content.push(lawContent);
 
           return;
         } else if (tieuMucRegex.test(line)) {
@@ -268,10 +318,12 @@ export class CrawlerService {
           checkContext();
 
           conText.name = 'tieuMuc' + num;
-          conText.title = line;
+          conText.value = line;
           conText.tag = 'muc' + muc;
-          lawContent.value = line.substring(matches[0].length).trim();
-          conText.content.push(lawContent);
+          // lawContent.value = line.substring(matches[0].length).trim();
+          lawContent.value = line;
+          lawContent.name = 'line' + khoan.content.length;
+          // conText.content.push(lawContent);
           return;
         } else if (dieuRegex.test(line)) {
           checkPoint = 2;
@@ -286,9 +338,11 @@ export class CrawlerService {
           checkContext();
 
           conText.name = 'dieu' + num;
-          conText.title = line;
-          lawContent.value = line.substring(matches[0].length).trim();
-          conText.content.push(lawContent);
+          conText.value = line;
+          // lawContent.value = line.substring(matches[0].length).trim();
+          lawContent.value = line;
+          lawContent.name = 'line' + khoan.content.length;
+          // conText.content.push(lawContent);
 
           return;
         } else if (diemRegex1.test(line) || diemRegex2.test(line)) {
@@ -300,9 +354,11 @@ export class CrawlerService {
           checkDiem();
 
           diem.name = 'diem' + num;
-          diem.title = line;
-          lawContent.value = line.substring(matches[0].length).trim();
-          diem.content.push(lawContent);
+          diem.value = line;
+          // lawContent.value = line.substring(matches[0].length).trim();
+          lawContent.value = line;
+          lawContent.name = 'line' + khoan.content.length;
+          // diem.content.push(lawContent);
 
           return;
         } else if (khoanRegex.test(line)) {
@@ -315,20 +371,26 @@ export class CrawlerService {
           checkKhoan();
 
           khoan.name = 'khoan' + num;
-          khoan.title = line;
-          lawContent.value = line.substring(matches[0].length).trim();
-          khoan.content.push(lawContent);
+          khoan.value = line;
+          // lawContent.value = line.substring(matches[0].length).trim();
+          lawContent.value = line;
+          lawContent.name = 'line' + khoan.content.length;
+          // khoan.content.push(lawContent);
 
           return;
         } else {
           if (checkPoint === 1) {
+            lawContent.name = 'description' + contents.description.length;
             contents.description.push(lawContent);
           } else if (checkPoint === 2) {
             if (current === 1) {
+              lawContent.name = 'line' + conText.content.length;
               conText.content.push(lawContent);
             } else if (current === 2) {
+              lawContent.name = 'line' + khoan.content.length;
               khoan.content.push(lawContent);
             } else if (current === 3) {
+              lawContent.name = 'line' + diem.content.length;
               diem.content.push(lawContent);
             }
           }
@@ -349,11 +411,21 @@ export class CrawlerService {
                     .replace(/ +/g, ' ')
                     .replace(/-+$/g, '')
                     .trim();
-                  const lawContent: Content = {
+                  const lawContent: Context = {
                     value: text,
+                    name: 'header' + contents.header.length,
                     embedding: '',
+                    classification: '',
+                    internal_ner: [],
+                    reference: [],
+                    content: [],
+                    tag: '',
+                    parent_ner: [],
+                    aggregation_ner: [],
                   };
-                  if (text !== '') contents.header.push(lawContent);
+                  if (text !== '') {
+                    contents.header.push(lawContent);
+                  }
                 });
               // contents.header.push($(element).html());
             } else if (checkPoint == 3) {
@@ -375,9 +447,17 @@ export class CrawlerService {
                   //             contents.footer.push(text);
                   //     });
                   const text = $(e).text().replace(/\n/g, '').trim();
-                  const lawContent: Content = {
+                  const lawContent: Context = {
                     value: text,
+                    name: 'footer' + contents.footer.length,
+                    classification: '',
+                    internal_ner: [],
                     embedding: '',
+                    reference: [],
+                    content: [],
+                    tag: '',
+                    parent_ner: [],
+                    aggregation_ner: [],
                   };
                   if (text !== '') contents.footer.push(lawContent);
                 });
@@ -468,7 +548,6 @@ export class CrawlerService {
         isFinish = true;
       } else {
         for (const url of urls) {
-          console.log(url);
           const existed = await this.lawService.checkLawExistence(url);
           if (existed) {
             count++;
@@ -500,4 +579,24 @@ export class CrawlerService {
       return [];
     }
   };
+
+  async crawlerAll() {
+    // read file json
+    const data = fs.readFileSync('./urls.json', 'utf8');
+    const urls = JSON.parse(data);
+    const crawled = Number(process.env.CRAWLED) || 0;
+    console.log('crawled:', crawled);
+    const length = urls.length;
+    for (let i = crawled; i < length; i++) {
+      const url = urls[i];
+      const existed = await this.lawService.checkLawExistence(url);
+      if (existed) {
+        console.log('existed:', urls[i]);
+        continue;
+      } else {
+        await this.crawler(url);
+        process.env.CRAWLED = i.toString();
+      }
+    }
+  }
 }

@@ -6,14 +6,24 @@ import { MediaType } from '../enum/enum';
 //
 export interface Context {
   name: string;
-  title: string;
+  value: string;
   content: (Content | Context)[];
+  embedding: string | '';
+  internal_ner: string[] | [];
   tag: string | '';
+  classification: string | '';
+  reference: string[] | [];
+  parent_ner: string[] | [];
+  aggregation_ner: string[] | [];
 }
 
 export interface Content {
+  name: string;
   value: string;
-  embedding: string;
+  embedding: string | '';
+  classification: string | '';
+  internal_ner: string[] | [];
+  reference: string[] | [];
 }
 
 export interface LawContent {

@@ -30,15 +30,19 @@ export class UserService {
     return user ? this.mapper.map(user, User, ReadUserDto) : null;
   }
 
-  async getUserProfile(id: string): Promise<ReadUserDto> {
-    const user = await this.userModel.findOne({ _id: new ObjectId(id) });
+  async getUserProfile(id: string): Promise<User> {
+    const user = await this.userModel.findOne(
+      { _id: new ObjectId(id) },
+      { password: 0 },
+    );
+    console.log(user);
 
     // return {
     //   message: 'user_profile',
     //   data: this.mapper.map(user, User, ReadUserDto),
     // };
 
-    return user ? this.mapper.map(user, User, ReadUserDto) : null;
+    return user;
   }
 
   async createUser(createUserDto: CreateUserDto): Promise<User | any> {

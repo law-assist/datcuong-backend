@@ -27,7 +27,7 @@ export class CrawlerController {
   @Public()
   @Get('auto')
   autoCrawler() {
-    return this.crawlerService.autoCrawler();
+    return this.crawlerService.crawlerAll();
   }
 
   @Get('find-all')
