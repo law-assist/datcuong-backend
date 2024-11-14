@@ -26,6 +26,7 @@ export enum Field {
   TrachNhiemHinhSu = 'Trách nhiệm hình sự',
   SoHuuTriTue = 'Sở hữu trí tuệ',
   ChungKhoan = 'Chứng khoán',
+  VanBanKhac = 'Văn bản khác',
 }
 
 export enum Department {

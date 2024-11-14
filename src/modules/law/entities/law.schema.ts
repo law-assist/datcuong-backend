@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { AutoMap } from '@automapper/classes';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
@@ -29,7 +30,7 @@ export class Law extends BaseSchema {
   pdfUrl: string;
 
   @AutoMap()
-  @Prop({ required: true, unique: true, name: 'number_doc' })
+  @Prop({ required: true, unique: false, name: 'number_doc' })
   numberDoc: string;
 
   @AutoMap()
@@ -46,7 +47,7 @@ export class Law extends BaseSchema {
 
   @AutoMap()
   @Prop({ required: true, type: [Object], name: 'relation_laws' })
-  relationLaws: LawRelation[];
+  relationLaws: any[];
 
   // @Prop({
   //   required: true,

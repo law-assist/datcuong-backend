@@ -44,7 +44,7 @@ WORKDIR /app
 COPY --chown=pptruser:pptruser package*.json ./
 
 # Install app dependencies including NestJS CLI
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Copy the rest of the application source code
 COPY --chown=pptruser:pptruser . .
@@ -53,7 +53,7 @@ COPY --chown=pptruser:pptruser . .
 RUN npm run build
 
 # Expose port if your app uses one (e.g., 3000)
-EXPOSE 3000
+EXPOSE 5000
 
 # Start the server using the production build
 # CMD [ "npm", "run", "start:prod" ]

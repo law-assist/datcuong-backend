@@ -10,16 +10,20 @@ import {
 import { CrawlerService } from './crawler.service';
 import { CreateCrawlerDto } from './dto/create-crawler.dto';
 import { UpdateCrawlerDto } from './dto/update-crawler.dto';
-import { ApiTags } from '@nestjs/swagger';
-import { Public } from 'src/decorators/roles.decorator';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Public, Roles } from 'src/decorators/roles.decorator';
+import { API_BEARER_AUTH } from 'src/constants/constants';
+import { Role } from 'src/common/enum/enum';
 
 @Controller('crawler')
 @ApiTags('crawler')
+@Roles(Role.ADMIN)
+@ApiBearerAuth(API_BEARER_AUTH)
 export class CrawlerController {
   constructor(private readonly crawlerService: CrawlerService) {}
 
-  @Post('url')
   @Public()
+  @Post('url')
   create(@Body() createCrawlerDto: CreateCrawlerDto) {
     return this.crawlerService.crawler(createCrawlerDto.url);
   }

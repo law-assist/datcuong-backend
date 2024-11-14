@@ -1,10 +1,11 @@
-version: '3.5'
+version: '3.8'
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: tnvl_backend
+    container_name: kanghcmut/tnvl-backend-app
+    image: kanghcmut/lvtn-backend-app:latest
     env_file:
       - .env
     ports:

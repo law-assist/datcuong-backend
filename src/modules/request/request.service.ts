@@ -36,7 +36,12 @@ export class RequestService {
 
     const document = await this.requestModel.findById(id);
 
-    if (!document || document.userRequestId.toString() !== uid) {
+    if (
+      !document &&
+      (document.userRequestId.toString() == uid ||
+        document.userResponseId.toString() == uid) &&
+      document.status !== RequestStatus.REJECT
+    ) {
       return;
     }
 
@@ -45,12 +50,11 @@ export class RequestService {
     document.responseMessage.push(message);
 
     const res = await document.save();
-    console.log(res);
 
     return res;
   }
 
-  async getAllUserRequest(uid: string, query: any) {
+  async getAllUserRequests(uid: string, query: any) {
     const limit: number = query.limit || 5;
     const page: number = query.page - 1 || 0;
     const skip: number = page * limit;
@@ -60,6 +64,119 @@ export class RequestService {
       .aggregate([
         {
           $match: { userRequestId: objectId },
+        },
+        {
+          $sort: { createdAt: -1 },
+        },
+        {
+          $facet: {
+            total: [{ $count: 'count' }],
+            data: [
+              {
+                $lookup: {
+                  from: 'users', // The collection name for 'User'
+                  localField: 'userResponseId', // The field in 'YourModel'
+                  foreignField: '_id', // The field in 'User'
+                  as: 'userResponse', // Alias for populated field
+                },
+              },
+              {
+                $unwind: {
+                  path: '$userResponse',
+                  preserveNullAndEmptyArrays: true, // Ensures documents are returned even if there's no match
+                },
+              },
+              {
+                $project: {
+                  title: 1,
+                  content: 1,
+                  status: 1,
+                  createdAt: 1,
+                  // userRequestId: 1,
+                  // userResponseId: 1,
+                  'userResponse.fullName': 1,
+                  'userResponse.avatarUrl': 1,
+                },
+              },
+              { $skip: skip },
+              { $limit: limit },
+            ],
+          },
+        },
+      ])
+      .exec();
+
+    const data = result[0].data;
+    const total = result[0].total.length > 0 ? result[0].total[0].count : 0;
+
+    return { data, total };
+  }
+
+  async getUserRequest(reqId: string, uid: string) {
+    const objectId = new Types.ObjectId(reqId); // Convert to ObjectId
+
+    const result = await this.requestModel
+      .aggregate([
+        {
+          $match: {
+            _id: objectId,
+            userRequestId: new Types.ObjectId(uid),
+          },
+        },
+        {
+          $sort: { createdAt: -1 },
+        },
+        {
+          $facet: {
+            data: [
+              {
+                $lookup: {
+                  from: 'users', // The collection name for 'User'
+                  localField: 'userResponseId', // The field in 'YourModel'
+                  foreignField: '_id', // The field in 'User'
+                  as: 'userResponse', // Alias for populated field
+                },
+              },
+              {
+                $unwind: {
+                  path: '$userResponse',
+                  preserveNullAndEmptyArrays: true, // Ensures documents are returned even if there's no match
+                },
+              },
+              {
+                $project: {
+                  title: 1,
+                  content: 1,
+                  status: 1,
+                  createdAt: -1,
+                  field: 1,
+                  media: 1,
+                  // userRequestId: 1,
+                  // userResponseId: 1,
+                  responseMessage: 1,
+                  'userResponse.fullName': 1,
+                  'userResponse.avatarUrl': 1,
+                },
+              },
+            ],
+          },
+        },
+      ])
+      .exec();
+    const data = result[0].data;
+    return data[0];
+  }
+
+  async getAllLawyerRequests(uid: string, query: any) {
+    const limit: number = query.limit || 5;
+    const page: number = query.page - 1 || 0;
+    const skip: number = page * limit;
+    const objectId = new Types.ObjectId(uid); // Convert to ObjectId
+
+    const result = await this.requestModel
+      .aggregate([
+        {
+          $match: { userResponseId: objectId },
         },
         {
           $sort: { createdAt: -1 },
@@ -89,9 +206,12 @@ export class RequestService {
                   title: 1,
                   content: 1,
                   status: 1,
-                  createdAt: 1,
-                  userRequestId: 1,
-                  userResponseId: 1,
+                  createdAt: -1,
+                  field: 1,
+                  // media: 1,
+                  // userRequestId: 1,
+                  // userResponseId: 1,
+                  // responseMessage: 1,
                   'userResponse.fullName': 1,
                 },
               },
@@ -100,22 +220,21 @@ export class RequestService {
         },
       ])
       .exec();
-
     const data = result[0].data;
     const total = result[0].total.length > 0 ? result[0].total[0].count : 0;
 
     return { data, total };
   }
 
-  async getLawyerRequest(lawId: string, lawyerId: string) {
-    const objectId = new Types.ObjectId(lawId); // Convert to ObjectId
+  async getLawyerRequest(reqId: string, lawyerId: string) {
+    const objectId = new Types.ObjectId(reqId); // Convert to ObjectId
 
     const result = await this.requestModel
       .aggregate([
         {
           $match: {
             _id: objectId,
-            userRequestId: new Types.ObjectId(lawyerId),
+            userResponseId: new Types.ObjectId(lawyerId),
           },
         },
         {
@@ -150,6 +269,7 @@ export class RequestService {
                   userResponseId: 1,
                   responseMessage: 1,
                   'userResponse.fullName': 1,
+                  'userResponse.avatarUrl': 1,
                 },
               },
             ],
@@ -158,7 +278,6 @@ export class RequestService {
       ])
       .exec();
     const data = result[0].data;
-    console.log(data);
     return data[0];
   }
 

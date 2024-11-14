@@ -35,12 +35,6 @@ export class UserService {
       { _id: new ObjectId(id) },
       { password: 0 },
     );
-    console.log(user);
-
-    // return {
-    //   message: 'user_profile',
-    //   data: this.mapper.map(user, User, ReadUserDto),
-    // };
 
     return user;
   }
@@ -76,11 +70,10 @@ export class UserService {
       }
       return 'user_updated';
     } catch (err) {
-      console.log(err.message);
-      if (err.keyPattern.email) {
+      if (err?.keyPattern?.email) {
         return 'email_exist';
       }
-      if (err.keyPattern.phoneNumber) {
+      if (err?.keyPattern?.phoneNumber) {
         return 'phone_number_exist';
       }
       return 'user_update_failed';

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { AutoMap } from '@automapper/classes';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsObject, IsOptional, IsString, IsUrl } from 'class-validator';
@@ -55,5 +56,5 @@ export class CreateLawDto {
   @AutoMap()
   @IsOptional()
   @IsString()
-  relationLaws?: LawRelation[];
+  relationLaws?: any[];
 }

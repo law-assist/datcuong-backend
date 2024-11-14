@@ -18,7 +18,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { LawQuery } from 'src/common/types';
 import { ResponseInterceptor } from 'src/common/interceptors/response.interceptor';
 import { API_BEARER_AUTH } from 'src/constants/constants';
-import { Roles } from 'src/decorators/roles.decorator';
+import { Public, Roles } from 'src/decorators/roles.decorator';
 import { Role } from 'src/common/enum/enum';
 import { ReqDto } from './dto/req.dto';
 
@@ -46,10 +46,22 @@ export class LawController {
     };
   }
 
+  @Public()
+  @Get('last-law')
+  async getLastLaw() {
+    const res = await this.lawService.getLastLaw();
+    if (!res) {
+      throw new NotFoundException('law_not_found');
+    }
+    return {
+      message: 'success',
+      data: res,
+    };
+  }
+
   @Roles(Role.ADMIN)
   @Get('string-to-date')
   async stringToDate() {
-    console.log('stringToDate');
     await this.lawService.dateStringToDates();
 
     return {

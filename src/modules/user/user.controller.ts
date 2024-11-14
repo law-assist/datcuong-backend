@@ -19,11 +19,13 @@ import { User } from 'src/common/decorators/user.decorator';
 import { API_BEARER_AUTH } from 'src/constants/constants';
 import { ResponseInterceptor } from 'src/common/interceptors/response.interceptor';
 import { CreateUserDto } from './dto/create-user.dto';
+import { Roles } from 'src/decorators/roles.decorator';
+import { Role } from 'src/common/enum/enum';
 // import { ReadUserDto } from './dto/read-user.dto';
 
 @Controller('user')
-@UseInterceptors(ResponseInterceptor)
 @ApiTags('user')
+@UseInterceptors(ResponseInterceptor)
 @ApiBearerAuth(API_BEARER_AUTH)
 export class UserController {
   constructor(private readonly service: UserService) {}
@@ -40,16 +42,19 @@ export class UserController {
     };
   }
 
+  @Roles(Role.ADMIN)
   @Post('signin')
   signin(@Body() user: UserDto) {
     return this.service.getUser(user.email, user.password);
   }
 
+  @Roles(Role.ADMIN)
   @Post('signup')
   register(@Body() user: CreateUserDto) {
     return this.service.createUser(user);
   }
 
+  // @Roles(Role.ADMIN)
   @HttpCode(200)
   @Patch('update')
   async update(@Body() updateUser: UpdateUserDto, @User() user: any) {

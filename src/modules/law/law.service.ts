@@ -171,6 +171,13 @@ export class LawService {
     }
   }
 
+  async getLastLaw() {
+    const lastLaw = await this.lawModel.findOne({ isDeleted: false }).sort({
+      _id: -1,
+    });
+    return lastLaw;
+  }
+
   async getAllDepartments() {
     const departments = await this.lawModel
       .find({ isDeleted: false })
@@ -215,13 +222,10 @@ export class LawService {
             isDeleted: false,
           })
           .limit(100);
-        console.log('Soft deleting unnecessary laws...');
         if (laws.length === 0) {
           return;
         }
         for (const law of laws) {
-          console.log('Processing:', law.baseUrl);
-          console.log('law.category:', law.category);
           const res = await this.remove(law._id);
           if (res) {
             console.log('Soft deleted:', law.baseUrl);
@@ -265,13 +269,11 @@ export class LawService {
             dateApproved: { $type: 'string' },
           })
           .limit(100);
-        console.log('Converting date strings to dates...');
         if (laws.length === 0) {
           return;
         }
 
         for (const law of laws) {
-          console.log('Processing:', law.baseUrl);
           const dateStr = law.dateApproved;
           // const [day, month, year] = dateStr.split('/');
           // const date = new Date(`${year}-${month}-${day}`);
@@ -282,7 +284,6 @@ export class LawService {
           );
 
           if (res.modifiedCount > 0) {
-            console.log('Updated:', law.baseUrl);
           }
         }
       }

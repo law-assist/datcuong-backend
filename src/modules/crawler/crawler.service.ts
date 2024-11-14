@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { BadRequestException, Injectable } from '@nestjs/common';
 // import cheerio from 'cheerio';
 // import puppeteer from 'puppeteer';
-import * as fs from 'fs';
 const cheerio = require('cheerio');
 const puppeteer = require('puppeteer');
+import * as fs from 'fs';
 // import axios from 'axios';
 import {
   chuongRegex,
@@ -19,7 +20,7 @@ import {
   tieuMucRegex,
 } from './helper/regex';
 import { Context, LawContent } from 'src/common/types';
-import { Field } from 'src/common/enum/enum';
+import { Category, Field } from 'src/common/enum/enum';
 import { CreateLawDto } from '../law/dto/create-law.dto';
 import { LawService } from '../law/law.service';
 import axios from 'axios';
@@ -34,9 +35,11 @@ export class CrawlerService {
     console.log(url, Date());
 
     const browser = await puppeteer.launch({
-      userDataDir: './my-chrome-data',
-      headless: 'new',
-      slowMo: 50,
+      headless: true,
+      // defaultViewport: null,
+      // userDataDir: './my-chrome-data',
+      // headless: 'new',
+      // slowMo: 50,
       args: [
         '--disable-setuid-sandbox',
         '--no-sandbox',
@@ -112,11 +115,11 @@ export class CrawlerService {
         return;
       }
 
-      if (skipLawDepartmentWord.some((word) => coQuanBanHanh.includes(word))) {
-        console.log(coQuanBanHanh);
-        await browser.close();
-        return;
-      }
+      // if (skipLawDepartmentWord.some((word) => coQuanBanHanh.includes(word))) {
+      //   console.log(coQuanBanHanh);
+      //   await browser.close();
+      //   return;
+      // }
 
       const contents: LawContent = {
         header: [],
@@ -495,7 +498,7 @@ export class CrawlerService {
 
       const law: CreateLawDto = {
         name: tenVanBan,
-        category: loaiVanBan,
+        category: loaiVanBan as Category,
         department: coQuanBanHanh,
         pdfUrl: url,
         baseUrl: url,
@@ -591,7 +594,7 @@ export class CrawlerService {
       const url = urls[i];
       const existed = await this.lawService.checkLawExistence(url);
       if (existed) {
-        console.log('existed:', urls[i]);
+        console.log('existed:', i);
         continue;
       } else {
         await this.crawler(url);

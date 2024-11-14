@@ -19,6 +19,8 @@ import { API_BEARER_AUTH } from 'src/constants/constants';
 import { ResponseInterceptor } from 'src/common/interceptors/response.interceptor';
 import { User } from 'src/common/decorators/user.decorator';
 import { ReadUserDto } from '../user/dto/read-user.dto';
+import { Roles } from 'src/decorators/roles.decorator';
+import { Role } from 'src/common/enum/enum';
 
 @Controller('request')
 @ApiTags('request')
@@ -46,6 +48,7 @@ export class RequestController {
     };
   }
 
+  @Roles(Role.LAWYER)
   @Post('response/:id')
   async sendResponse(
     @User() user: ReadUserDto,
@@ -67,6 +70,7 @@ export class RequestController {
     };
   }
 
+  @Roles(Role.ADMIN)
   @Get()
   findAll() {
     // return this.requestService.findAll();
@@ -74,7 +78,7 @@ export class RequestController {
 
   @Get('user')
   async getUserRequest(@User() user: ReadUserDto, @Query() query?: any) {
-    const res = await this.requestService.getAllUserRequest(
+    const res = await this.requestService.getAllUserRequests(
       user._id.toString(),
       query,
     );
@@ -89,9 +93,44 @@ export class RequestController {
     };
   }
 
+  @Get('user/:id')
+  async getUserRequestById(@User() user: ReadUserDto, @Param('id') id: string) {
+    const res = await this.requestService.getUserRequest(
+      id,
+      user._id.toString(),
+    );
+
+    if (!res) {
+      throw new NotFoundException('request_not_found');
+    }
+
+    return {
+      message: 'success',
+      data: res,
+    };
+  }
+
+  @Roles(Role.LAWYER)
+  @Get('lawyer')
+  async getLawyerRequests(@User() user: ReadUserDto, @Query() query?: any) {
+    const res = await this.requestService.getAllLawyerRequests(
+      user._id.toString(),
+      query,
+    );
+
+    if (!res) {
+      throw new NotFoundException('request_not_found');
+    }
+
+    return {
+      message: 'success',
+      data: res,
+    };
+  }
+
+  @Roles(Role.LAWYER)
   @Get('lawyer/:id')
   async getLawyerRequest(@User() user: ReadUserDto, @Param('id') id: string) {
-    console.log(id);
     const res = await this.requestService.getLawyerRequest(
       id,
       user._id.toString(),
@@ -107,16 +146,19 @@ export class RequestController {
     };
   }
 
+  @Roles(Role.ADMIN)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.requestService.findOne(id);
   }
 
+  @Roles(Role.ADMIN)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateRequestDto: UpdateRequestDto) {
     return this.requestService.update(id, updateRequestDto);
   }
 
+  @Roles(Role.ADMIN)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.requestService.remove(id);
