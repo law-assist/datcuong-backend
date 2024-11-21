@@ -2,7 +2,7 @@
 import { AutoMap } from '@automapper/classes';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
-import { BaseSchema } from 'src/common/base/base.schema';
+import { BaseSchema, BaseSchemaFactory } from 'src/common/base/base.schema';
 import { Category, Field } from 'src/common/enum/enum';
 import { LawContent, LawRelation } from 'src/common/types';
 
@@ -65,6 +65,8 @@ export class Law extends BaseSchema {
 }
 
 const LawSchema = SchemaFactory.createForClass(Law);
+
+LawSchema.add(BaseSchemaFactory);
 
 LawSchema.index({ name: 'text' }, { default_language: 'none' });
 LawSchema.index({ department: 1 });

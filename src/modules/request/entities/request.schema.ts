@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
-import { BaseSchema } from 'src/common/base/base.schema';
+import { BaseSchema, BaseSchemaFactory } from 'src/common/base/base.schema';
 import { Field, RequestStatus } from 'src/common/enum/enum';
 import { Media, ResponseMessage } from 'src/common/types';
 
@@ -33,6 +33,8 @@ export class Request extends BaseSchema {
 }
 
 const RequestSchema = SchemaFactory.createForClass(Request);
+
+RequestSchema.add(BaseSchemaFactory);
 
 RequestSchema.index({ title: 'text' });
 RequestSchema.index({ field: 1 });

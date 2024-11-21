@@ -59,21 +59,20 @@ export class LawController {
     };
   }
 
-  @Roles(Role.ADMIN)
-  @Get('string-to-date')
-  async stringToDate() {
-    await this.lawService.dateStringToDates();
-
+  @Public()
+  @Get('verify-law')
+  async verifyLaw() {
+    const res = await this.lawService.verifyLaw();
     return {
       message: 'success',
+      data: res,
     };
   }
-
   // @Get('fields')
   // async getFields() {
   //   return this.lawService.getFields();
   // }
-
+  @Roles(Role.ADMIN)
   @Get('categories')
   async getCategories() {
     return {
@@ -82,6 +81,7 @@ export class LawController {
     };
   }
 
+  @Roles(Role.ADMIN)
   @Get('departments')
   async getDepartments() {
     return {
@@ -103,11 +103,13 @@ export class LawController {
     };
   }
 
+  @Roles(Role.ADMIN)
   @Post()
   create(@Body() createLawDto: CreateLawDto) {
     return this.lawService.create(createLawDto);
   }
 
+  @Roles(Role.ADMIN)
   @Post('depatment')
   async removelaws(@Body() req: ReqDto) {
     await this.lawService.softDeleteLawByDepartment(req.word);

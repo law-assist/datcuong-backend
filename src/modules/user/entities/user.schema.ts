@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { AutoMap } from '@automapper/classes';
 import { HydratedDocument } from 'mongoose';
-import { BaseSchema } from 'src/common/base/base.schema';
+import { BaseSchema, BaseSchemaFactory } from 'src/common/base/base.schema';
 import { Field, Role, UserStatus } from 'src/common/enum/enum';
 
 export type UserDocument = HydratedDocument<User>;
@@ -102,6 +102,13 @@ export class User extends BaseSchema {
 }
 
 const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.add(BaseSchemaFactory);
+
+UserSchema.index({ fullName: 'text' }, { default_language: 'none' });
+UserSchema.index({ status: 1 });
+UserSchema.index({ role: 1 });
+UserSchema.index({ fields: 1 });
 
 UserSchema.pre('save', function (next) {
   this.updatedAt = new Date();

@@ -251,47 +251,38 @@ export class LawService {
   }
 
   async remove(id: string) {
-    const law = await this.lawModel.findByIdAndUpdate(id, {
-      isDeleted: true,
-      deletedAt: new Date(),
-    });
+    const law = await this.lawModel.findByIdAndDelete(id);
     if (!law) {
       throw new NotFoundException('not_found');
     }
     return law;
   }
 
-  async dateStringToDates() {
-    try {
-      while (true) {
-        const laws = await this.lawModel
-          .find({
-            dateApproved: { $type: 'string' },
-          })
-          .limit(100);
-        if (laws.length === 0) {
-          return;
-        }
+  async verifyLaw() {
+    let isFinished = false;
+    let skip = 0;
 
-        for (const law of laws) {
-          const dateStr = law.dateApproved;
-          // const [day, month, year] = dateStr.split('/');
-          // const date = new Date(`${year}-${month}-${day}`);
-
-          const res = await this.lawModel.updateOne(
-            { _id: law._id },
-            { $set: { dateApproved: dateStr } },
-          );
-
-          if (res.modifiedCount > 0) {
-          }
-        }
+    while (!isFinished) {
+      const laws = await this.lawModel
+        .find({ isDeleted: false })
+        .skip(skip)
+        .limit(100)
+        .sort({ _id: 1 });
+      if (laws.length === 0) {
+        isFinished = true;
       }
-    } catch (err: any) {
-      console.error('Error converting date strings to dates:', err); // Use a more descriptive message
-      // throw new Error(
-      //   `Failed to convert date strings to dates: ${err.message}`,
-      // );
+      for (const law of laws) {
+        if (
+          law.content.header.length === 0 ||
+          law.content.description.length === 0 ||
+          law.content.mainContent.length === 0 ||
+          law.content.footer.length === 0
+        ) {
+          await this.remove(law._id.toString());
+          console.log('Deleted:');
+        } else skip++;
+        console.log(law.baseUrl);
+      }
     }
   }
 }

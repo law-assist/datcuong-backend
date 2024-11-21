@@ -2,9 +2,9 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { BadRequestException, Injectable } from '@nestjs/common';
 // import cheerio from 'cheerio';
-// import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer';
 const cheerio = require('cheerio');
-const puppeteer = require('puppeteer');
+// const puppeteer = require('puppeteer');
 import * as fs from 'fs';
 // import axios from 'axios';
 import {
@@ -26,6 +26,7 @@ import { LawService } from '../law/law.service';
 import axios from 'axios';
 import { stringToDate } from './helper';
 import { hightLawList, skipLawDepartmentWord } from 'src/common/const';
+import { data } from 'cheerio/dist/commonjs/api/attributes';
 
 @Injectable()
 export class CrawlerService {
@@ -36,30 +37,31 @@ export class CrawlerService {
 
     const browser = await puppeteer.launch({
       headless: true,
-      // defaultViewport: null,
+      defaultViewport: null,
       // userDataDir: './my-chrome-data',
       // headless: 'new',
       // slowMo: 50,
       args: [
         '--disable-setuid-sandbox',
         '--no-sandbox',
-        // '--disable-gpu',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
         // '--disable-cache',
         // '--single-process',
         // '--no-zygote',
         // '--no-startup-window',
-        '--disable-dev-shm-usage',
       ],
-      protocolTimeout: 20000,
+      protocolTimeout: 60000,
       executablePath:
         process.env.NODE_ENV === 'production'
-          ? process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser'
+          ? (process.env.PUPPETEER_EXECUTABLE_PATH ??
+            '/usr/bin/chromium-browser')
           : puppeteer.executablePath(),
     });
 
     try {
       const page = await browser.newPage();
-      await page.goto(url, { timeout: 6000 });
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
       //login
       // await page.waitForSelector("#usernameTextBox");
@@ -170,7 +172,7 @@ export class CrawlerService {
       };
 
       const checkContext = () => {
-        if (conText.name !== '') {
+        if (conText.name !== '' || conText.content.length > 0) {
           contents.mainContent.push(conText);
           conText = {
             name: '',
@@ -188,7 +190,7 @@ export class CrawlerService {
         return;
       };
       const checkKhoan = () => {
-        if (khoan.name !== '') {
+        if (khoan.name !== '' || khoan.content.length > 0) {
           conText.content.push(khoan);
           khoan = {
             name: '',
@@ -205,7 +207,7 @@ export class CrawlerService {
         }
       };
       const checkDiem = () => {
-        if (diem.name !== '') {
+        if (diem.name !== '' || diem.content.length > 0) {
           khoan.content.push(diem);
           diem = {
             name: '',
@@ -292,6 +294,7 @@ export class CrawlerService {
           return;
         } else if (mucRegex.test(line)) {
           muc++;
+          checkPoint = 2;
           matches = line.match(mucRegex) || [];
           num = matches[1];
 
@@ -311,6 +314,7 @@ export class CrawlerService {
 
           return;
         } else if (tieuMucRegex.test(line)) {
+          checkPoint = 2;
           matches = line.match(tieuMucRegex) || [];
           num = matches[1];
 
@@ -332,7 +336,7 @@ export class CrawlerService {
           checkPoint = 2;
           matches = line.match(dieuRegex) || [];
 
-          num = matches[1];
+          num = matches[0] === 'Điều' ? matches[1] : matches[0];
 
           current = 1;
 
@@ -349,6 +353,7 @@ export class CrawlerService {
 
           return;
         } else if (diemRegex1.test(line) || diemRegex2.test(line)) {
+          checkPoint = 2;
           matches = line.match(diemRegex1) || line.match(diemRegex2) || [];
           num = matches[1];
 
@@ -368,6 +373,7 @@ export class CrawlerService {
           matches = line.match(khoanRegex) || [];
           num = matches[1];
 
+          checkPoint = 2;
           current = 2;
 
           checkDiem();
@@ -403,7 +409,93 @@ export class CrawlerService {
       $('#tab1 .content1 div div')
         .children()
         .each((index, element) => {
-          if (element.name == 'table' && (checkPoint == 0 || checkPoint == 3)) {
+          if (element.name === 'div') {
+            const $element = $(element);
+            $element.children().each((i, element) => {
+              if (element.name == 'table' && checkPoint < 4) {
+                if (checkPoint === 0) {
+                  $(element)
+                    .find('p')
+                    .each((i, e) => {
+                      const text = $(e)
+                        .text()
+                        .replace(/\n/g, ' ')
+                        .replace(/ +/g, ' ')
+                        .replace(/-+$/g, '')
+                        .trim();
+                      const lawContent: Context = {
+                        value: text,
+                        name: 'header' + contents.header.length,
+                        embedding: '',
+                        classification: '',
+                        internal_ner: [],
+                        reference: [],
+                        content: [],
+                        tag: '',
+                        parent_ner: [],
+                        aggregation_ner: [],
+                      };
+                      if (text !== '') {
+                        contents.header.push(lawContent);
+                      }
+                    });
+
+                  // contents.header.push($(element).html());
+                } else {
+                  const $element = $(element); // Wrap the current element in jQuery for easier manipulation
+                  const $parentChildren = $element.parent().children();
+                  if (
+                    $element.is($parentChildren.last()) ||
+                    $element.is($parentChildren.eq(-2)) ||
+                    checkPoint === 3
+                  ) {
+                    console.log('footer');
+                    checkDiem();
+                    checkKhoan();
+                    checkContext();
+                    $(element)
+                      .find('p')
+                      .each((i, e) => {
+                        // $(e)
+                        //     .children()
+                        //     .each((i, e) => {
+                        //         const text = $(e)
+                        //             .text()
+                        //             // .replace(/\n/g, "")
+                        //             // .replace(/ +/g, " ")
+                        //             .trim();
+                        //         if (text !== "")
+                        //             contents.footer.push(text);
+                        //     });
+                        const text = $(e).text().replace(/\n/g, '').trim();
+                        const lawContent: Context = {
+                          value: text,
+                          name: 'footer' + contents.footer.length,
+                          classification: '',
+                          internal_ner: [],
+                          embedding: '',
+                          reference: [],
+                          content: [],
+                          tag: '',
+                          parent_ner: [],
+                          aggregation_ner: [],
+                        };
+                        if (text !== '') contents.footer.push(lawContent);
+                      });
+                    checkPoint++;
+                  }
+                  // contents.footer.push($(element).html());
+                }
+              } else if (checkPoint < 3) {
+                const paragraph = $(element).text().replace(/\n/g, ' ').trim();
+                if (paragraph !== 'Video Pháp Luật') {
+                  readingCurrentLine(paragraph);
+                }
+              } else {
+                contents.extend.push($(element).html());
+              }
+            });
+          } else if (element.name == 'table' && checkPoint < 4) {
             if (checkPoint === 0) {
               $(element)
                 .find('p')
@@ -430,42 +522,52 @@ export class CrawlerService {
                     contents.header.push(lawContent);
                   }
                 });
+
               // contents.header.push($(element).html());
-            } else if (checkPoint == 3) {
-              checkDiem();
-              checkKhoan();
-              checkContext();
-              $(element)
-                .find('p')
-                .each((i, e) => {
-                  // $(e)
-                  //     .children()
-                  //     .each((i, e) => {
-                  //         const text = $(e)
-                  //             .text()
-                  //             // .replace(/\n/g, "")
-                  //             // .replace(/ +/g, " ")
-                  //             .trim();
-                  //         if (text !== "")
-                  //             contents.footer.push(text);
-                  //     });
-                  const text = $(e).text().replace(/\n/g, '').trim();
-                  const lawContent: Context = {
-                    value: text,
-                    name: 'footer' + contents.footer.length,
-                    classification: '',
-                    internal_ner: [],
-                    embedding: '',
-                    reference: [],
-                    content: [],
-                    tag: '',
-                    parent_ner: [],
-                    aggregation_ner: [],
-                  };
-                  if (text !== '') contents.footer.push(lawContent);
-                });
+            } else {
+              const $element = $(element); // Wrap the current element in jQuery for easier manipulation
+              const $parentChildren = $element.parent().children();
+              if (
+                $element.is($parentChildren.last()) ||
+                $element.is($parentChildren.eq(-2)) ||
+                checkPoint === 3
+              ) {
+                console.log('footer');
+                checkDiem();
+                checkKhoan();
+                checkContext();
+                $(element)
+                  .find('p')
+                  .each((i, e) => {
+                    // $(e)
+                    //     .children()
+                    //     .each((i, e) => {
+                    //         const text = $(e)
+                    //             .text()
+                    //             // .replace(/\n/g, "")
+                    //             // .replace(/ +/g, " ")
+                    //             .trim();
+                    //         if (text !== "")
+                    //             contents.footer.push(text);
+                    //     });
+                    const text = $(e).text().replace(/\n/g, '').trim();
+                    const lawContent: Context = {
+                      value: text,
+                      name: 'footer' + contents.footer.length,
+                      classification: '',
+                      internal_ner: [],
+                      embedding: '',
+                      reference: [],
+                      content: [],
+                      tag: '',
+                      parent_ner: [],
+                      aggregation_ner: [],
+                    };
+                    if (text !== '') contents.footer.push(lawContent);
+                  });
+                checkPoint++;
+              }
               // contents.footer.push($(element).html());
-              checkPoint++;
             }
           } else if (checkPoint < 3) {
             const paragraph = $(element).text().replace(/\n/g, ' ').trim();
@@ -512,7 +614,45 @@ export class CrawlerService {
       // await browser.disconnect();
       await browser.close();
 
-      if (!hightLawList.includes(law.category)) return;
+      if (!hightLawList.includes(law.category)) {
+        console.log('law_not_hight');
+        return {
+          message: 'law_not_hight',
+          data: law,
+        };
+      }
+
+      if (contents.mainContent.length === 0) {
+        await this.addError(url);
+        console.log('No main content');
+        return {
+          message: 'No main content',
+          data: law,
+        };
+      }
+      if (contents.description.length === 0) {
+        await this.addError(url);
+        console.log('No description');
+        return {
+          message: 'No description',
+          data: law,
+        };
+      }
+      if (contents.header.length === 0) {
+        await this.addError(url);
+        return {
+          message: 'No header',
+          data: law,
+        };
+      }
+      if (contents.footer.length === 0) {
+        await this.addError(url);
+        console.log('No footer');
+        return {
+          message: 'No footer',
+          data: law,
+        };
+      }
 
       const newLaw = await this.lawService.create(law);
       if (!newLaw) {
@@ -601,5 +741,12 @@ export class CrawlerService {
         process.env.CRAWLED = i.toString();
       }
     }
+  }
+
+  async addError(url: string) {
+    const data = fs.readFileSync('./err.json', 'utf8');
+    const urls = JSON.parse(data);
+    urls.push(url);
+    fs.writeFileSync('./err.json', JSON.stringify(urls), 'utf8');
   }
 }
