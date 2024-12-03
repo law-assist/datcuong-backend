@@ -15,12 +15,13 @@ import { LawService } from './law.service';
 import { CreateLawDto } from './dto/create-law.dto';
 import { UpdateLawDto } from './dto/update-law.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { LawQuery } from 'src/common/types';
+import { LawQuery, RefQuery } from 'src/common/types';
 import { ResponseInterceptor } from 'src/common/interceptors/response.interceptor';
 import { API_BEARER_AUTH } from 'src/constants/constants';
 import { Public, Roles } from 'src/decorators/roles.decorator';
 import { Role } from 'src/common/enum/enum';
 import { ReqDto } from './dto/req.dto';
+import { CreateCrawlerDto } from '../crawler/dto/create-crawler.dto';
 
 @Controller('law')
 @ApiTags('law')
@@ -29,6 +30,7 @@ import { ReqDto } from './dto/req.dto';
 export class LawController {
   constructor(private readonly lawService: LawService) {}
 
+  @Roles(Role.ADMIN)
   @Get()
   findAll() {
     return this.lawService.findAll();
@@ -37,6 +39,65 @@ export class LawController {
   @Get('search')
   async search(@Query() query?: LawQuery) {
     const res = await this.lawService.searchLaw(query);
+    if (!res) {
+      throw new NotFoundException('law_not_found');
+    }
+    return {
+      message: 'success',
+      data: res,
+    };
+  }
+
+  @Get('search-ref')
+  async searchRef(@Query() query?: RefQuery) {
+    const res = await this.lawService.searchLawRef(query);
+    if (!res) {
+      throw new NotFoundException('law_not_found');
+    }
+    return {
+      message: 'success',
+      data: res,
+    };
+  }
+
+  @Get('custom-law')
+  async findCustomLaw() {
+    const data = await this.lawService.getCustomLaws();
+
+    if (!data) {
+      throw new NotFoundException('law_not_found');
+    }
+    return {
+      message: 'success',
+      data,
+    };
+  }
+
+  @Get('reference-auto')
+  async referenceLawAuto() {
+    const data = await this.lawService.referenceLawAuto();
+    if (!data) {
+      throw new NotFoundException('law_not_found');
+    }
+    return {
+      message: 'success',
+      data,
+    };
+  }
+
+  @Roles(Role.ADMIN)
+  @Get('long-name')
+  async findLongNameAll() {
+    const data = await this.lawService.getLawsWithLongNames();
+    return {
+      message: 'success',
+      data,
+    };
+  }
+
+  @Get('reference-manual/:id')
+  async getReferenceManual(@Param('id') id: string) {
+    const res = await this.lawService.referenceLawManual(id);
     if (!res) {
       throw new NotFoundException('law_not_found');
     }
@@ -59,10 +120,20 @@ export class LawController {
     };
   }
 
-  @Public()
+  @Roles(Role.ADMIN)
   @Get('verify-law')
   async verifyLaw() {
     const res = await this.lawService.verifyLaw();
+    return {
+      message: 'success',
+      data: res,
+    };
+  }
+
+  @Roles(Role.ADMIN)
+  @Get('rename-law')
+  async renameLaw() {
+    const res = await this.lawService.renameLaw();
     return {
       message: 'success',
       data: res,
@@ -100,6 +171,30 @@ export class LawController {
     return {
       message: 'success',
       data: law,
+    };
+  }
+
+  @Post('search-name')
+  async searchName(@Body() req: ReqDto) {
+    const res = await this.lawService.findByName(req.word);
+    if (!res) {
+      throw new NotFoundException('law_not_found');
+    }
+    return {
+      message: 'success',
+      data: res,
+    };
+  }
+
+  @Post('search-url')
+  async searchUrl(@Body() req: CreateCrawlerDto) {
+    const res = await this.lawService.findByUrl(req.url);
+    if (!res) {
+      throw new NotFoundException('law_not_found');
+    }
+    return {
+      message: 'success',
+      data: res,
     };
   }
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Controller,
   Get,
@@ -22,20 +23,25 @@ import { Role } from 'src/common/enum/enum';
 export class CrawlerController {
   constructor(private readonly crawlerService: CrawlerService) {}
 
-  @Public()
   @Post('url')
   create(@Body() createCrawlerDto: CreateCrawlerDto) {
     return this.crawlerService.crawler(createCrawlerDto.url);
   }
 
-  @Public()
   @Get('auto')
   autoCrawler() {
+    return this.crawlerService.autoCrawler();
+  }
+
+  @Get('auto/all')
+  findAll() {
     return this.crawlerService.crawlerAll();
   }
 
-  @Get('find-all')
-  findAll() {}
+  @Get('auto/all-fake')
+  findAllFake() {
+    return this.crawlerService.crawlerAllFake();
+  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {

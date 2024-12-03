@@ -74,6 +74,7 @@ LawSchema.index({ fields: 1 });
 LawSchema.index({ category: 1 });
 LawSchema.index({ numberDoc: 1 });
 LawSchema.index({ dateApproved: -1 });
+LawSchema.index({ category: 1, department: 1 });
 
 LawSchema.pre('save', function (next) {
   this.updatedAt = new Date();

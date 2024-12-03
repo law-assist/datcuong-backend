@@ -71,3 +71,11 @@ export interface LawQuery {
   page: number;
   size: number;
 }
+
+export interface RefQuery {
+  lawId: string;
+  LawRef: string;
+  index: number;
+  classification: number;
+  type: string;
+}

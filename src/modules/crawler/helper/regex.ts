@@ -20,7 +20,7 @@ const diemRegex2 = /^([\p{L}])\)/u;
 const khoanRegex = /^(\d+)\./;
 
 const isOpen = /^[“"]/;
-const isClose = /\.("|”)\.?$/;
+const isClose = /\.?("|”)(\;|\.)?$/;
 
 export {
   phanRegex,
