@@ -1,4 +1,4 @@
-name: lvtn-backend-ci-cd
+name: lvtn-backend-ci-cd-dev
 on:
   push:
     branches: [ dev ]
