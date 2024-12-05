@@ -13,7 +13,7 @@ import { CreateLawDto } from './dto/create-law.dto';
 import { LawQuery, RefQuery } from 'src/common/types';
 import { hightLawList } from 'src/common/const';
 import { lastValueFrom, map } from 'rxjs';
-// import { Category, Department, Field } from 'src/common/enum/enum';
+// import { Category, Department, Field } from 'src/common/enum';
 
 @Injectable()
 export class LawService {

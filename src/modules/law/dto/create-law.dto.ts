@@ -2,7 +2,7 @@
 import { AutoMap } from '@automapper/classes';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsObject, IsOptional, IsString, IsUrl } from 'class-validator';
-import { Category, Field } from 'src/common/enum/enum';
+import { Category, Field } from 'src/common/enum';
 import { LawContent, LawRelation } from 'src/common/types';
 
 export class CreateLawDto {

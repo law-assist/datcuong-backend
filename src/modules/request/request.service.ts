@@ -5,7 +5,7 @@ import { Request } from './entities/request.schema';
 import { Connection, Model, Types } from 'mongoose';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { ResponseMessage } from 'src/common/types';
-import { RequestStatus } from 'src/common/enum/enum';
+import { RequestStatus } from 'src/common/enum';
 
 @Injectable()
 export class RequestService {
@@ -175,9 +175,9 @@ export class RequestService {
 
     const result = await this.requestModel
       .aggregate([
-        {
-          $match: { userResponseId: objectId },
-        },
+        // {
+        //   $match: { userResponseId: objectId }, //demo
+        // },
         {
           $sort: { createdAt: -1 },
         },
@@ -234,7 +234,7 @@ export class RequestService {
         {
           $match: {
             _id: objectId,
-            userResponseId: new Types.ObjectId(lawyerId),
+            // userResponseId: new Types.ObjectId(lawyerId), //demo
           },
         },
         {

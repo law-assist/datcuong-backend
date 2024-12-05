@@ -1,5 +1,7 @@
 {
   "cSpell.language": "en,vn,en-GB,en-US",
   "cSpell.enableFiletypes": ["typescript"],
-  "cSpell.words": ["khoan"]
+  "cSpell.words": ["khoan"],
+  "jest.runMode": "on-demand",
+  "testing.openTesting": "neverOpen"
 }

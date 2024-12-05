@@ -1,0 +1,19 @@
+{
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "transform": {
+    "^.+\\.(ts|tsx)$": "ts-jest"
+  },
+  "watch": false,
+  "testing.openTesting": "neverOpen",
+  "jest.runMode": "on-demand",
+  "testMatch": ["<rootDir>/tests/**/*.(spec|test).[tj]s?(x)"],
+  "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"],
+  "collectCoverageFrom": ["*/**/*.{ts,tsx}"],
+  "coveragePathIgnorePatterns": ["/node_modules/", "/dist/"],
+  "coverageReporters": ["text", "lcov", "html"],
+  "moduleNameMapper": {
+    "^src/(.*)$": "<rootDir>/src/$1"
+  },
+  "coverageDirectory": "./coverage"
+}

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
 import { BaseSchema, BaseSchemaFactory } from 'src/common/base/base.schema';
-import { Field, RequestStatus } from 'src/common/enum/enum';
+import { Field, RequestStatus } from 'src/common/enum';
 import { Media, ResponseMessage } from 'src/common/types';
 
 export type RequestDocument = HydratedDocument<Request>;

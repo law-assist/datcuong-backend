@@ -2,7 +2,7 @@ import { AutoMap } from '@automapper/classes';
 import { ApiProperty } from '@nestjs/swagger';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { IsString, Length, IsEmail, IsOptional, IsEnum } from 'class-validator';
-import { Role } from 'src/common/enum/enum';
+import { Role } from 'src/common/enum';
 
 export class CreateUserDto {
   @AutoMap()

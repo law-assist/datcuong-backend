@@ -3,7 +3,7 @@ import { AutoMap } from '@automapper/classes';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { BaseSchema, BaseSchemaFactory } from 'src/common/base/base.schema';
-import { Category, Field } from 'src/common/enum/enum';
+import { Category, Field } from 'src/common/enum';
 import { LawContent, LawRelation } from 'src/common/types';
 
 export type LawDocument = HydratedDocument<Law>;

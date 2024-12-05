@@ -2,7 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { AutoMap } from '@automapper/classes';
 import { HydratedDocument } from 'mongoose';
 import { BaseSchema, BaseSchemaFactory } from 'src/common/base/base.schema';
-import { Field, Role, UserStatus } from 'src/common/enum/enum';
+import { Field, Role, UserStatus } from 'src/common/enum';
+import { generateVerificationCode } from 'src/helpers';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -90,6 +91,7 @@ export class User extends BaseSchema {
     required: false,
     type: String,
     name: 'email_verify_token',
+    default: generateVerificationCode,
   })
   emailVerifyToken: string;
 
@@ -97,6 +99,7 @@ export class User extends BaseSchema {
     required: false,
     type: String,
     name: 'password_forgot_token',
+    default: generateVerificationCode,
   })
   passwordForgotToken: string;
 }

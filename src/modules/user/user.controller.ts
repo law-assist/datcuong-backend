@@ -20,7 +20,7 @@ import { API_BEARER_AUTH } from 'src/constants/constants';
 import { ResponseInterceptor } from 'src/common/interceptors/response.interceptor';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Roles } from 'src/decorators/roles.decorator';
-import { Role } from 'src/common/enum/enum';
+import { Role } from 'src/common/enum';
 // import { ReadUserDto } from './dto/read-user.dto';
 
 @Controller('user')
@@ -44,14 +44,29 @@ export class UserController {
 
   @Roles(Role.ADMIN)
   @Post('signin')
-  signin(@Body() user: UserDto) {
-    return this.service.getUser(user.email, user.password);
+  async signin(@Body() user: UserDto) {
+    const res = await this.service.getUser(user.email, user.password);
+    if (!res) {
+      throw new NotFoundException('user_not_found');
+    }
+
+    return {
+      message: 'success',
+      data: res,
+    };
   }
 
   @Roles(Role.ADMIN)
   @Post('signup')
   register(@Body() user: CreateUserDto) {
-    return this.service.createUser(user);
+    const res = this.service.createUser(user);
+    if (!res) {
+      throw new BadRequestException('email_or_phone_exist');
+    }
+    return {
+      message: 'user_created',
+      data: res,
+    };
   }
 
   // @Roles(Role.ADMIN)

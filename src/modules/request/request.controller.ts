@@ -20,7 +20,7 @@ import { ResponseInterceptor } from 'src/common/interceptors/response.intercepto
 import { User } from 'src/common/decorators/user.decorator';
 import { ReadUserDto } from '../user/dto/read-user.dto';
 import { Roles } from 'src/decorators/roles.decorator';
-import { Role } from 'src/common/enum/enum';
+import { Role } from 'src/common/enum';
 
 @Controller('request')
 @ApiTags('request')

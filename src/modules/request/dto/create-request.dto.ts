@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
-import { Field, RequestStatus } from 'src/common/enum/enum';
+import { Field, RequestStatus } from 'src/common/enum';
 import { Media, ResponseMessage } from 'src/common/types';
 export class CreateRequestDto {
   @ApiProperty()

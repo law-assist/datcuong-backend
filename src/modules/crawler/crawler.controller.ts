@@ -14,7 +14,7 @@ import { UpdateCrawlerDto } from './dto/update-crawler.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Public, Roles } from 'src/decorators/roles.decorator';
 import { API_BEARER_AUTH } from 'src/constants/constants';
-import { Role } from 'src/common/enum/enum';
+import { Role } from 'src/common/enum';
 
 @Controller('crawler')
 @ApiTags('crawler')

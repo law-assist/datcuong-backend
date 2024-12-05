@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Response } from './../interceptors/response.interceptor';
 import { RelationType } from 'typeorm/metadata/types/RelationTypes';
-import { MediaType } from '../enum/enum';
+import { MediaType } from '../enum';
 
 //
 export interface Context {

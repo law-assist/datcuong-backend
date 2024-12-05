@@ -44,7 +44,7 @@ export class UserService {
       const newUser = await this.userModel.create(createUserDto);
       return newUser;
     } catch (err) {
-      console.error('Error creating user:', err.message);
+      // console.error('Error creating user:', err.message);
       if (err.keyPattern.email) {
         throw new BadRequestException('email_exist');
       }
@@ -55,10 +55,7 @@ export class UserService {
     }
   }
 
-  async updateUser(
-    id: string,
-    updateUserDto: UpdateUserDto,
-  ): Promise<User | any> {
+  async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<any> {
     const _id = new ObjectId(id);
     try {
       const res = await this.userModel.updateOne({ _id: _id }, updateUserDto);
@@ -81,7 +78,7 @@ export class UserService {
   }
 
   async remove(id: string): Promise<User | any> {
-    const _id = new ObjectId(id);
-    return await this.userModel.deleteOne({ _id: _id });
+    // const _id = new ObjectId(id);
+    return await this.userModel.findByIdAndDelete(id);
   }
 }

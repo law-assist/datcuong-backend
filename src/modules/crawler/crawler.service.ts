@@ -20,7 +20,7 @@ import {
   tieuMucRegex,
 } from './helper/regex';
 import { Context, LawContent } from 'src/common/types';
-import { Category, Field } from 'src/common/enum/enum';
+import { Category, Field } from 'src/common/enum';
 import { CreateLawDto } from '../law/dto/create-law.dto';
 import { LawService } from '../law/law.service';
 import axios from 'axios';

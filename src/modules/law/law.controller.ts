@@ -19,7 +19,7 @@ import { LawQuery, RefQuery } from 'src/common/types';
 import { ResponseInterceptor } from 'src/common/interceptors/response.interceptor';
 import { API_BEARER_AUTH } from 'src/constants/constants';
 import { Public, Roles } from 'src/decorators/roles.decorator';
-import { Role } from 'src/common/enum/enum';
+import { Role } from 'src/common/enum';
 import { ReqDto } from './dto/req.dto';
 import { CreateCrawlerDto } from '../crawler/dto/create-crawler.dto';
 

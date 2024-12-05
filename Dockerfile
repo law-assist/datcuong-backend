@@ -1,6 +1,8 @@
 # Sử dụng Node.js v21 official runtime image hỗ trợ đa kiến trúc (x64, arm64)
 FROM --platform=linux/arm64 node:21-alpine
 
+# FROM node:21-alpine 
+
 # Cài đặt các dependencies cần thiết cho Puppeteer hoặc Chrome
 RUN apk add --no-cache \
   chromium \

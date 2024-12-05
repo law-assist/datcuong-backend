@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "types": ["jest"],
     "module": "commonjs",
     "declaration": true,
     "removeComments": true,
@@ -10,6 +11,11 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
+    "paths": {
+      "src/*": ["./src/*"],
+      "test/*": ["./test/*"],
+      "tests/*": ["./tests/*"]
+    },
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": false,

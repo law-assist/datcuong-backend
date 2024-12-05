@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { CreateUserDto } from './create-user.dto';
-import { UserStatus } from 'src/common/enum/enum';
+import { UserStatus } from 'src/common/enum';
 import { AutoMap } from '@automapper/classes';
 
 export class ReadUserDto extends CreateUserDto {
