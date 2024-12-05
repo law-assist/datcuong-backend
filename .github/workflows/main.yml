@@ -1,7 +1,7 @@
-name: lvtn-backend-ci-cd
+name: lvtn-backend-ci-cd-main
 on:
   push:
-    branches: [ dev ]
+    branches: [ main ]
 jobs:
   docker:
     runs-on: ubuntu-latest
