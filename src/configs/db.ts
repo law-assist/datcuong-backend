@@ -9,7 +9,7 @@ export const AppDataSource = new DataSource({
   port: 27017,
   username: '',
   password: '',
-  database: 'kang_store',
+  database: 'law_linking',
   entities: [`${__dirname}/../**/*.schema{.ts,.js}`],
   synchronize: true,
   logging: true,
