@@ -55,8 +55,8 @@ COPY --chown=pptruser:pptruser . .
 # Build ứng dụng (tạo thư mục 'dist')
 RUN npm run build
 # Mở port ứng dụng
-ENV PORT 29001
-EXPOSE 29001
+ENV PORT=5000
+EXPOSE 5000
 
 # Khởi chạy server với build production
 CMD ["node", "dist/src/main.js"]
