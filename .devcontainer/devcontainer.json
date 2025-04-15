@@ -1,0 +1,28 @@
+{
+	// Dev container name
+	"name": "DACN-242 backend dev environment",
+	// Docker compose file for dev environment
+	"dockerComposeFile": "docker-compose.yml",
+	// Service run on dev container
+	"service": "backend",
+	// "workspaceMount": "source=${localWorkspaceFolderBasename}/sub-folder,target=/workspace,type=bind",
+	"workspaceFolder": "/workspace",
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	"forwardPorts": [5000, 27017],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "npm install --legacy-peer-deps",
+
+	// Configure tool-specific properties.
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"eamodio.gitlens",
+				"mongodb.mongodb-vscode"
+			]
+		}
+	},
+
+	"remoteUser": "root"
+}
