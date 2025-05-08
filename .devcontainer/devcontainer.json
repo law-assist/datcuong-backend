@@ -5,7 +5,7 @@
 	"dockerComposeFile": "docker-compose.yml",
 	// Service run on dev container
 	"service": "backend",
-	// "workspaceMount": "source=${localWorkspaceFolderBasename}/sub-folder,target=/workspace,type=bind",
+	// Path of workspace folder inside container
 	"workspaceFolder": "/workspace",
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.

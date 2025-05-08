@@ -13,6 +13,7 @@ import { CreateLawDto } from './dto/create-law.dto';
 import { LawQuery, RefQuery } from 'src/common/types';
 import { hightLawList } from 'src/common/const';
 import { lastValueFrom, map } from 'rxjs';
+import axios from 'axios';
 // import { Category, Department, Field } from 'src/common/enum';
 
 @Injectable()
@@ -24,11 +25,16 @@ export class LawService {
     @InjectMapper()
     public readonly mapper: Mapper,
   ) {}
-  aiHost = process.env.AI_HOST ?? 'http://localhost:8000';
+  aiHost =
+    process.env.AI_HOST ?? 'http://localhost:8000/reference_matching/id_input';
 
   async create(createLawDto: CreateLawDto): Promise<Law> {
     try {
       const newLaw = await this.lawModel.create(createLawDto);
+      const aiResponse = await axios.post(this.aiHost, {
+        input_string_id: newLaw._id,
+      });
+      console.log(aiResponse);
       return newLaw;
     } catch (err) {
       console.error('Error creating law:', err);
