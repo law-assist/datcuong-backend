@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, CallbackError } from 'mongoose';
+// import * as moment from 'moment-timezone';
 
 @Schema({ versionKey: false })
 export class BaseSchema extends Document {
@@ -26,6 +27,10 @@ export class BaseSchema extends Document {
 }
 
 const BaseSchemaFactory = SchemaFactory.createForClass(BaseSchema);
+
+BaseSchemaFactory.index({ createdAt: -1 });
+BaseSchemaFactory.index({ updatedAt: -1 });
+BaseSchemaFactory.index({ isDeleted: -1 });
 
 BaseSchemaFactory.pre('save', function (next: (err?: CallbackError) => void) {
   this.updatedAt = new Date();

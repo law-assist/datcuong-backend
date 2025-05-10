@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Controller,
   Get,
@@ -10,28 +11,37 @@ import {
 import { CrawlerService } from './crawler.service';
 import { CreateCrawlerDto } from './dto/create-crawler.dto';
 import { UpdateCrawlerDto } from './dto/update-crawler.dto';
-import { ApiTags } from '@nestjs/swagger';
-import { Public } from 'src/decorators/roles.decorator';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Public, Roles } from 'src/decorators/roles.decorator';
+import { API_BEARER_AUTH } from 'src/constants/constants';
+import { Role } from 'src/common/enum';
 
 @Controller('crawler')
 @ApiTags('crawler')
+@Roles(Role.ADMIN)
+@ApiBearerAuth(API_BEARER_AUTH)
 export class CrawlerController {
   constructor(private readonly crawlerService: CrawlerService) {}
 
-  @Post('crawler')
-  @Public()
+  @Post('url')
   create(@Body() createCrawlerDto: CreateCrawlerDto) {
     return this.crawlerService.crawler(createCrawlerDto.url);
   }
 
-  @Public()
   @Get('auto')
   autoCrawler() {
     return this.crawlerService.autoCrawler();
   }
 
-  @Get('find-all')
-  findAll() {}
+  @Get('auto/all')
+  findAll() {
+    return this.crawlerService.crawlerAll();
+  }
+
+  @Get('auto/all-fake')
+  findAllFake() {
+    return this.crawlerService.crawlerAllFake();
+  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {

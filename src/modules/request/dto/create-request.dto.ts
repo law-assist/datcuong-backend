@@ -1,30 +1,43 @@
-import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { Field, RequestStatus } from 'src/common/enum/enum';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
+import { Field, RequestStatus } from 'src/common/enum';
 import { Media, ResponseMessage } from 'src/common/types';
 export class CreateRequestDto {
+  @ApiProperty()
   @IsString()
+  @MaxLength(120)
   title: string;
 
+  @ApiProperty()
   @IsString()
+  @MaxLength(1000)
   content: string;
 
+  @ApiProperty()
   @IsOptional()
-  media?: Media[]; // Optional field for media
+  media?: Media[];
 
-  @IsString() // Expecting string to represent ObjectId in DTO
-  userRequestId: string; // Required, referencing the User making the request
-
+  @ApiProperty()
   @IsOptional()
-  @IsString() // Optional, referencing the User responding to the request
+  @IsString()
+  userRequestId?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
   userResponseId?: string;
 
+  @ApiProperty()
   @IsEnum(Field)
-  field: Field; // Enum for the field category
+  field: Field;
 
+  @ApiProperty()
   @IsOptional()
   @IsEnum(RequestStatus)
-  status?: RequestStatus; // Optional status field
+  // Default: RequestStatus = RequestStatus.PENDING;
+  status?: RequestStatus;
 
+  @ApiProperty()
   @IsOptional()
-  responseMessage?: ResponseMessage[]; // Optional response messages
+  responseMessage?: ResponseMessage[];
 }

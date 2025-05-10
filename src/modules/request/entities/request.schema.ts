@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
-import { BaseSchema } from 'src/common/base/base.schema';
-import { Field, RequestStatus } from 'src/common/enum/enum';
+import { BaseSchema, BaseSchemaFactory } from 'src/common/base/base.schema';
+import { Field, RequestStatus } from 'src/common/enum';
 import { Media, ResponseMessage } from 'src/common/types';
 
 export type RequestDocument = HydratedDocument<Request>;
@@ -16,11 +16,9 @@ export class Request extends BaseSchema {
   @Prop({ type: [{ type: SchemaTypes.Mixed }], required: false })
   media: Media[];
 
-  // Reference to the User model for the user who made the request
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User', required: true })
   userRequestId: Types.ObjectId;
 
-  // Reference to the User model for the user who responded
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User', required: false })
   userResponseId?: Types.ObjectId;
 
@@ -35,6 +33,14 @@ export class Request extends BaseSchema {
 }
 
 const RequestSchema = SchemaFactory.createForClass(Request);
+
+RequestSchema.add(BaseSchemaFactory);
+
+RequestSchema.index({ title: 'text' });
+RequestSchema.index({ field: 1 });
+RequestSchema.index({ status: 1 });
+RequestSchema.index({ userRequestId: 1 });
+RequestSchema.index({ userResponseId: 1 });
 
 RequestSchema.pre('save', function (next) {
   this.updatedAt = new Date();

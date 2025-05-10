@@ -1,42 +1,53 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { AutoMap } from '@automapper/classes';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
-import { BaseSchema } from 'src/common/base/base.schema';
-import { Field } from 'src/common/enum/enum';
+import { BaseSchema, BaseSchemaFactory } from 'src/common/base/base.schema';
+import { Category, Field } from 'src/common/enum';
 import { LawContent, LawRelation } from 'src/common/types';
 
 export type LawDocument = HydratedDocument<Law>;
 
 @Schema({ versionKey: false })
 export class Law extends BaseSchema {
+  @AutoMap()
   @Prop({ required: true })
   name: string;
 
-  @Prop({ required: true })
-  category: string;
+  @AutoMap()
+  @Prop({ required: true, type: String, enum: Category })
+  category: Category;
 
+  @AutoMap()
   @Prop({ required: true })
   department: string;
 
   @Prop({ required: true, unique: true, type: String, name: 'base_url' })
   baseUrl: string;
 
+  @AutoMap()
   @Prop({ required: false, unique: true, type: String, name: 'pdf_url' })
   pdfUrl: string;
 
-  @Prop({ required: true, name: 'number_doc' })
+  @AutoMap()
+  @Prop({ required: true, unique: false, name: 'number_doc' })
   numberDoc: string;
 
+  @AutoMap()
   @Prop({ required: true, name: 'date_approved' })
-  dateApproved: string;
+  dateApproved: Date;
 
+  @AutoMap()
   @Prop({ required: true, type: [String], enum: Field })
   fields: Field[];
 
+  @AutoMap()
   @Prop({ required: true, type: Object })
   content: LawContent;
 
+  @AutoMap()
   @Prop({ required: true, type: [Object], name: 'relation_laws' })
-  relationLaws: LawRelation[];
+  relationLaws: any[];
 
   // @Prop({
   //   required: true,
@@ -54,6 +65,16 @@ export class Law extends BaseSchema {
 }
 
 const LawSchema = SchemaFactory.createForClass(Law);
+
+LawSchema.add(BaseSchemaFactory);
+
+LawSchema.index({ name: 'text' }, { default_language: 'none' });
+LawSchema.index({ department: 1 });
+LawSchema.index({ fields: 1 });
+LawSchema.index({ category: 1 });
+LawSchema.index({ numberDoc: 1 });
+LawSchema.index({ dateApproved: -1 });
+LawSchema.index({ category: 1, department: 1 });
 
 LawSchema.pre('save', function (next) {
   this.updatedAt = new Date();

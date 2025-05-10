@@ -11,7 +11,7 @@ export class HttpExceptionFilter {
 
     const exceptionResponse = {
       data: null,
-      status: status,
+      statusCode: status,
       message: message,
       timestamp: new Date().toISOString(),
     };

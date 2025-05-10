@@ -35,15 +35,19 @@ export class AuthService {
         role: userRes.role,
         phoneNumber: userRes.phoneNumber,
         status: userRes.status,
-        field: userRes.field,
+        field: userRes.fields,
         avatarUrl: userRes.avatarUrl,
       },
     };
     const tokens = await this.getTokens(payload);
     return {
-      user: payload.user,
-      tokens,
+      data: {
+        user: payload.user,
+        tokens,
+      },
       message: 'login_success',
+      status: 'success',
+      statusCode: 200,
     };
   }
 
@@ -58,6 +62,8 @@ export class AuthService {
     }
     return {
       message: 'user_created',
+      status: 'success',
+      statusCode: 201,
     };
   }
 
@@ -69,8 +75,8 @@ export class AuthService {
           user: payload.user,
         },
         {
-          secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-          expiresIn: '15m',
+          secret: process.env.JWT_SECRET,
+          expiresIn: '1h',
         },
       ),
       this.jwtService.signAsync(
@@ -79,7 +85,7 @@ export class AuthService {
           user: payload.user,
         },
         {
-          secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+          secret: process.env.JWT_SECRET,
           expiresIn: '7d',
         },
       ),
@@ -89,5 +95,27 @@ export class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+  async refreshToken(id: string): Promise<any> {
+    const user = await this.userService.getUserProfile(id);
+    if (!user) {
+      throw new UnauthorizedException('user_not_found');
+    }
+    const payload = {
+      user: {
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        phoneNumber: user.phoneNumber,
+        status: user.status,
+        fields: user.fields,
+        avatarUrl: user.avatarUrl,
+      },
+    };
+
+    const tokens = await this.getTokens(payload);
+    return tokens || null;
   }
 }

@@ -12,11 +12,16 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { LawModule } from './modules/law/law.module';
 import { RequestModule } from './modules/request/request.module';
+import { AutomapperModule } from '@automapper/nestjs';
+import { classes } from '@automapper/classes';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true, // Makes the configuration available globally
+    }),
+    AutomapperModule.forRoot({
+      strategyInitializer: classes(),
     }),
     MongooseModule.forRoot(process.env.MONGODB_URI),
     CrawlerModule,

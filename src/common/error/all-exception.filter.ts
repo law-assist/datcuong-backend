@@ -23,7 +23,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     const exceptionResponse = {
       data: null,
-      status: status,
+      statusCode: status,
       message: exception?.response?.message || exception.message || message,
       timestamp: new Date().toISOString(),
     };

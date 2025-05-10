@@ -12,7 +12,7 @@ const mucRegex = /^Mục (\d+)(\.|:)/;
 
 const tieuMucRegex = /^Tiểu mục (\d+)(\.|:)/;
 
-const dieuRegex = /^Điều (\d+)\./;
+const dieuRegex = /(^Điều (\d+)(\.| :|:))|(^X{0,3}(IX|IV|V?I{0,3})(\.| \.))/;
 
 const diemRegex1 = /^(\d+\.\d+)\./;
 const diemRegex2 = /^([\p{L}])\)/u;
@@ -20,7 +20,7 @@ const diemRegex2 = /^([\p{L}])\)/u;
 const khoanRegex = /^(\d+)\./;
 
 const isOpen = /^[“"]/;
-const isClose = /\.("|”)\.?$/;
+const isClose = /\.?("|”)(\;|\.)?$/;
 
 export {
   phanRegex,
