@@ -1,15 +1,17 @@
 {
 	// Dev container name
-	"name": "DACN-242 backend dev environment",
+	"name": "law assist backend dev environment",
 	// Docker compose file for dev environment
-	"dockerComposeFile": "docker-compose.yml",
-	// Service run on dev container
-	"service": "backend",
-	// Path of workspace folder inside container
-	"workspaceFolder": "/workspace",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"options": ["--tag=dacn-242-backend-dev"]
+	},
+	// Or use a pre-built image on local dev container, uncomment to pull dev image
+	// If so, DON'T COMMIT THAT CHANGE!!
+	// "image": "lawassist/backend:dev-latest"
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [5000, 27017],
+	"forwardPorts": [29003, 27017],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "npm install --legacy-peer-deps",

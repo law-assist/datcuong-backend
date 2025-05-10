@@ -1,5 +1,5 @@
 # Sử dụng Node.js v21 official runtime image hỗ trợ đa kiến trúc (x64, arm64)
-FROM --platform=linux/arm64 node:21-alpine
+FROM node:24-alpine
 
 # FROM node:21-alpine 
 
@@ -55,8 +55,8 @@ COPY --chown=pptruser:pptruser . .
 # Build ứng dụng (tạo thư mục 'dist')
 RUN npm run build
 # Mở port ứng dụng
-ENV PORT=5000
-EXPOSE 5000
+ENV PORT=29001
+EXPOSE 29001
 
 # Khởi chạy server với build production
 CMD ["node", "dist/src/main.js"]
