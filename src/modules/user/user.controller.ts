@@ -85,4 +85,14 @@ export class UserController {
 
     throw new BadRequestException(message);
   }
+
+  @Roles(Role.ADMIN)
+  @Get('all')
+  async getAllUsers() {
+    const users = await this.service.findAll();
+    return {
+      message: 'all_users',
+      data: users,
+    };
+  }
 }

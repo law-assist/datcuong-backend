@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
 import { Request } from './entities/request.schema';
@@ -289,7 +289,11 @@ export class RequestService {
     return await this.requestModel.findByIdAndUpdate(id, updateRequestDto);
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} request`;
+  async remove(id: string) {
+    const law = await this.requestModel.findByIdAndDelete(id);
+    if (!law) {
+      throw new NotFoundException('not_found');
+    }
+    return law;
   }
 }
