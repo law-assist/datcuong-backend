@@ -296,4 +296,7 @@ export class RequestService {
     }
     return law;
   }
+  async findAll(): Promise<Request[]> {
+    return await this.requestModel.find();
+  }
 }

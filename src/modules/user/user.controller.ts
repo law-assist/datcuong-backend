@@ -8,8 +8,8 @@ import {
   HttpCode,
   NotFoundException,
   BadRequestException,
-  // Param,
-  // Delete,
+  Param,
+  Delete,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserDto } from '../auth/dto/user.dto';
@@ -94,5 +94,9 @@ export class UserController {
       message: 'all_users',
       data: users,
     };
+  }
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.service.remove(id);
   }
 }

@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Connection, Model } from 'mongoose';
@@ -77,8 +81,11 @@ export class UserService {
     }
   }
 
-  async remove(id: string): Promise<User | any> {
-    // const _id = new ObjectId(id);
-    return await this.userModel.findByIdAndDelete(id);
+  async remove(id: string) {
+    const user = await this.userModel.findByIdAndDelete(id);
+    if (!user) {
+      throw new NotFoundException('not_found');
+    }
+    return user;
   }
 }

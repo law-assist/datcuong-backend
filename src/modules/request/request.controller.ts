@@ -71,9 +71,13 @@ export class RequestController {
   }
 
   @Roles(Role.ADMIN)
-  @Get()
-  findAll() {
-    // return this.requestService.findAll();
+  @Get('all')
+  async getAllUsers() {
+    const request = await this.requestService.findAll();
+    return {
+      message: 'all_request',
+      data: request,
+    };
   }
 
   @Get('user')
