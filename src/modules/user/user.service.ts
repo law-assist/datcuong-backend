@@ -12,6 +12,9 @@ import { ObjectId } from 'mongodb';
 import { InjectMapper } from '@automapper/nestjs';
 import { Mapper } from '@automapper/core';
 import { ReadUserDto } from './dto/read-user.dto';
+import { ConfigService } from '@nestjs/config';
+import * as bcrypt from 'bcrypt';
+import { Role } from 'src/common/enum';
 
 @Injectable()
 export class UserService {
@@ -20,7 +23,31 @@ export class UserService {
     @InjectConnection() private connection: Connection,
     @InjectMapper()
     public readonly mapper: Mapper,
+    private readonly configService: ConfigService,
   ) {}
+
+  async onModuleInit() {
+    const email = this.configService.get<string>('DEFAULT_USER_EMAIL');
+    const existingUser = await this.userModel.findOne({ email });
+
+    if (!existingUser) {
+      const password = this.configService.get<string>('DEFAULT_USER_PASSWORD');
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const newUser: CreateUserDto = {
+        fullName: this.configService.get<string>('DEFAULT_USER_FULLNAME'),
+        email,
+        password: hashedPassword,
+        role: this.configService.get<Role>('DEFAULT_USER_ROLE') || Role.USER,
+        phoneNumber: this.configService.get<string>('DEFAULT_USER_PHONE'),
+        address: this.configService.get<string>('DEFAULT_USER_ADDRESS'),
+        dob: new Date(this.configService.get<string>('DEFAULT_USER_DOB')),
+      };
+
+      await this.userModel.create(newUser);
+      console.log('✅ Default user created');
+    }
+  }
 
   async findAll(): Promise<User[]> {
     return await this.userModel.find();
