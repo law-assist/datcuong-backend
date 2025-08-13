@@ -2,7 +2,8 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { BadRequestException, Injectable } from '@nestjs/common';
 // import cheerio from 'cheerio';
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-extra';
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const cheerio = require('cheerio');
 // const puppeteer = require('puppeteer');
 import * as fs from 'fs';
@@ -27,6 +28,9 @@ import axios from 'axios';
 import { stringToDate } from './helper';
 import { hightLawList, skipLawDepartmentWord } from 'src/common/const';
 import { data } from 'cheerio/dist/commonjs/api/attributes';
+
+// Use the Puppeteer Extra Stealth Plugin
+puppeteer.use(StealthPlugin());
 
 @Injectable()
 export class CrawlerService {
@@ -84,6 +88,9 @@ export class CrawlerService {
       // await page.waitForSelector('#aLuocDo', { timeout: 60000 });
       // await page.click('#aLuocDo');
       // await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // take the page screenshot
+      // await page.screenshot({ path: 'screenshot.png' });
 
       let content = await page.content();
       if (!content) {
@@ -708,22 +715,87 @@ export class CrawlerService {
     }
   }
 
-  getUrls = async (page: number) => {
-    const url = `https://thuvienphapluat.vn/page/tim-van-ban.aspx?area=0&page=${page}`;
+  async autoMajorLawCrawler() {
+    let isFinish = false;
+    let page = 1;
+    let count = 0;
+    while (!isFinish) {
+      const urls = await this.getUrls(page, 'https://thuvienphapluat.vn/page/tim-van-ban.aspx?keyword=luật&area=1');
+      if (urls.length === 0) {
+        isFinish = true;
+      } 
+      else {
+        for (const url of urls) {
+          const existed = await this.lawService.checkLawExistence(url);
+          if (existed) {
+            count++;
+            if (count >= 200) {
+              isFinish = true;
+              break;
+            }
+          } else await this.crawler(url);
+        }
+        page++;
+      }
+    } 
+  }
+
+  getUrls = async (page: number, url: string = 'https://thuvienphapluat.vn/page/tim-van-ban.aspx?area=0') => {
+    url =  url + `&page=${page}`;
+
+    // lauch browswr
+    const browser = await puppeteer.launch({
+      headless: true,
+      defaultViewport: null,
+      // userDataDir: './my-chrome-data',
+      // headless: 'new',
+      // slowMo: 50,
+      args: [
+        '--disable-setuid-sandbox',
+        '--no-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        // '--disable-cache',
+        // '--single-process',
+        // '--no-zygote',
+        // '--no-startup-window',
+      ],
+      protocolTimeout: 60000,
+      executablePath:
+        process.env.NODE_ENV === 'production'
+          ? (process.env.PUPPETEER_EXECUTABLE_PATH ??
+            '/usr/bin/chromium-browser')
+          : puppeteer.executablePath(),
+    });
+    let urls: any[] = [];
+
     try {
-      const response = await axios.get(url);
-      const $ = cheerio.load(response.data);
-      const urls: any[] = [];
+      const page = await browser.newPage();
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+
+      let content = await page.content();
+      const $ = cheerio.load(content);
+      // const response = await axios.get(url);
+      // const $ = cheerio.load(response.data);
+      // const urls: any[] = [];
       $('.nq .nqTitle a').each((index, element) => {
         const link = $(element).attr('href');
         urls.push(link);
       });
 
-      return urls;
+      // return urls;
     } catch (error) {
       console.error(`Error fetching URLs: ${error}`);
-      return [];
+      // return [];
+    } finally {
+      await browser.close();
+
+      const dir = './my-chrome-data';
+      fs.rmSync(dir, { recursive: true, force: true });
     }
+    await browser.close();
+    if (urls.length == 0) return [];
+    return urls;
   };
 
   async crawlerAll() {
