@@ -11,7 +11,7 @@
 	// "image": "lawassist/backend:dev-latest"
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [29003, 27017],
+	"forwardPorts": [29003],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "npm install --legacy-peer-deps",

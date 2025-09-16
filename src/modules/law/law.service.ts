@@ -25,20 +25,43 @@ export class LawService {
     @InjectMapper()
     public readonly mapper: Mapper,
   ) {}
-  aiHost =
-    process.env.AI_HOST ?? 'http://localhost:8000/reference_matching/id_input';
+  aiHost = process.env.AI_HOST ?? 'http://ai-law-linking:8000/reference_matching/id_input';
+  chatHost = process.env.CHAT_HOST ?? 'http://ai-chatbot:8000/';
 
   async create(createLawDto: CreateLawDto): Promise<Law> {
     try {
       const newLaw = await this.lawModel.create(createLawDto);
-      const aiResponse = await axios.post(this.aiHost, {
+      console.log('AI law linking host:', this.aiHost);
+      const lawLinkingResponse = await axios.post(this.aiHost, {
         input_string_id: newLaw._id,
       });
-      console.log(aiResponse);
+      console.log(lawLinkingResponse);
+
+      const indexingResponse = await this.lawIndexing(newLaw._id.toString());
+      // console.log(indexingResponse);
       return newLaw;
     } catch (err) {
       console.error('Error creating law:', err);
       throw new Error(`Failed to create law: ${err.message}`);
+    }
+  }
+
+  async lawIndexing(lawId: string) {
+    try {
+      const indexingResponse = await axios.post(this.chatHost + 'indexing/id', {
+        indexing_id: lawId,
+      });
+      console.log(indexingResponse.data);
+      if (indexingResponse.data.errors.length > 0) {
+        for (const error of indexingResponse.data.errors) {
+          console.error('Indexing error:', error);
+        }
+        throw new Error('Indexing failed');
+      }
+      return indexingResponse.data;
+    } catch (err) {
+      console.error('Error indexing laws:', err);
+      throw new Error(`Failed to index laws: ${err.message}`);
     }
   }
 
