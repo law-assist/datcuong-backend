@@ -33,6 +33,11 @@ export class CrawlerController {
     return this.crawlerService.autoCrawler();
   }
 
+  @Get('auto/majorlaw')
+  autoMajorLawCrawler() {
+    return this.crawlerService.autoMajorLawCrawler();
+  }
+
   @Get('auto/all')
   findAll() {
     return this.crawlerService.crawlerAll();
