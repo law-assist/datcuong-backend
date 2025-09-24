@@ -102,6 +102,14 @@ export class User extends BaseSchema {
     default: generateVerificationCode,
   })
   passwordForgotToken: string;
+
+  @AutoMap()
+  @Prop({
+    required: false,
+    type: Number,
+    default: 0,
+  })
+  maxChatHistory: number;
 }
 
 const UserSchema = SchemaFactory.createForClass(User);

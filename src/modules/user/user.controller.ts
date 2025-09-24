@@ -99,4 +99,16 @@ export class UserController {
   remove(@Param('id') id: string) {
     return this.service.remove(id);
   }
+
+  @Patch('updateMaxChatHistory/:id')
+  async incrementMaxChatHistory(@Param('id') id: string) {
+    const user = await this.service.incrementMaxChatHistory(id);
+    if (!user) {
+      throw new NotFoundException('user_not_found');
+    }
+    return {
+      message: 'max_chat_history_incremented',
+      data: user,
+    };
+  }
 }

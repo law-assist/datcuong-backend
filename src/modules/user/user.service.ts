@@ -115,4 +115,21 @@ export class UserService {
     }
     return user;
   }
+
+  async incrementMaxChatHistory(id: string): Promise<User> {
+    const _id = new ObjectId(id);
+    const user = await this.userModel
+      .findOneAndUpdate(
+        { _id },
+        { $inc: { maxChatHistory: 1 } },
+        { new: true, projection: { password: 0 } },
+      )
+      .exec();
+
+    if (!user) {
+      throw new NotFoundException('user_not_found2');
+    }
+
+    return user;
+  }
 }
