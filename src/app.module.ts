@@ -14,6 +14,7 @@ import { LawModule } from './modules/law/law.module';
 import { RequestModule } from './modules/request/request.module';
 import { AutomapperModule } from '@automapper/nestjs';
 import { classes } from '@automapper/classes';
+import { ChatbotModules } from './modules/chatbot/chatbot.modules';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { classes } from '@automapper/classes';
     UserModule,
     LawModule,
     RequestModule,
+    ChatbotModules,
   ],
   controllers: [AppController],
   providers: [AppService, ...GuardsProvider, ...FiltersProvider],

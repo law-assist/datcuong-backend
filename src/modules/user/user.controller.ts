@@ -10,6 +10,7 @@ import {
   BadRequestException,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserDto } from '../auth/dto/user.dto';
@@ -109,6 +110,19 @@ export class UserController {
     return {
       message: 'max_chat_history_incremented',
       data: user,
+    };
+  }
+
+  @Get('maxChatHistory')
+  async getUserMaxChatHistory(@Query('id') id: string) {
+    console.log('Fetching max chat history for user ID:', id); // Debugging line
+    const user = await this.service.getUserMaxChatHistory(id);
+    if (!user) {
+      throw new NotFoundException('user_not_found');
+    }
+    return {
+      message: 'max_chat_history',
+      data: { maxChatHistory: user.maxChatHistory },
     };
   }
 }

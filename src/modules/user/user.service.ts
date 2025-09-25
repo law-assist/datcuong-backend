@@ -129,6 +129,14 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('user_not_found2');
     }
+    return user;  
+  }
+
+  async getUserMaxChatHistory(id: string): Promise<User> {
+    const user = await this.userModel.findOne(
+      { _id: new ObjectId(id) },
+      { password: 0 },
+    );
 
     return user;
   }
